@@ -334,10 +334,10 @@ function setLang(newLang) {
 }
 
 /* ==========================================================================
-   1. DÁN MẢNG const db = [...] CỦA BẠN VÀO DƯỚI ĐÂY
+   MẢNG DỮ LIỆU TĨNH (DB) - DÁN DỮ LIỆU CỦA BẠN VÀO ĐÂY
    ========================================================================== */
 const db = [
-    {kam: "HUỲNH VĂN TÍNH", kae: "❌ DSR Bùi Thị Kim Hoa", hq: "1.South", area: "3. South Mekong", week: "W1", sales: "737000", totalC: "30", activeC: "2",  Cinroute: "164", status: "In-active", route: "F4",AVGSKUperIVC: "1"},
+{kam: "HUỲNH VĂN TÍNH", kae: "❌ DSR Bùi Thị Kim Hoa", hq: "1.South", area: "3. South Mekong", week: "W1", sales: "737000", totalC: "30", activeC: "2",  Cinroute: "164", status: "In-active", route: "F4",AVGSKUperIVC: "1"},
 {kam: "HUỲNH VĂN TÍNH", kae: "❌ DSR Bùi Thị Kim Hoa", hq: "1.South", area: "3. South Mekong", week: "W1", sales: "764854.62962963", totalC: "28", activeC: "3",  Cinroute: "164", status: "In-active", route: "F4",AVGSKUperIVC: "2"},
 {kam: "HUỲNH VĂN TÍNH", kae: "❌ DSR Bùi Thị Kim Hoa", hq: "1.South", area: "3. South Mekong", week: "W1", sales: "0", totalC: "30", activeC: "0",  Cinroute: "164", status: "In-active", route: "F4",AVGSKUperIVC: "0"},
 {kam: "HUỲNH VĂN TÍNH", kae: "❌ DSR Bùi Thị Kim Hoa", hq: "1.South", area: "3. South Mekong", week: "W1", sales: "0", totalC: "26", activeC: "0",  Cinroute: "164", status: "In-active", route: "F4",AVGSKUperIVC: "0"},
@@ -3871,160 +3871,6 @@ const db = [
 {kam: "VŨ DUY HÙNG", kae: "✔️ KAE Vũ Quang Phúc", hq: "2.North", area: "1. Ha Noi", week: "W4", sales: "3696000", totalC: "22", activeC: "9",  Cinroute: "162", status: "Active", route: "F4",AVGSKUperIVC: "1.44444444444444"},
 {kam: "VŨ DUY HÙNG", kae: "✔️ KAE Vũ Quang Phúc", hq: "2.North", area: "1. Ha Noi", week: "W4", sales: "3200000", totalC: "37", activeC: "10",  Cinroute: "162", status: "Active", route: "F4",AVGSKUperIVC: "1"},
 {kam: "VŨ DUY HÙNG", kae: "✔️ KAE Vũ Quang Phúc", hq: "2.North", area: "1. Ha Noi", week: "W4", sales: "5038488.88888889", totalC: "36", activeC: "13",  Cinroute: "162", status: "Active", route: "F4",AVGSKUperIVC: "1.15384615384615"},
-
-];
-
-/* ==========================================================================
-   2. DÁN MẢNG AREA LOGIC VÀO DƯỚI ĐÂY (Dành cho góc nhìn Cả tuần)
-   ========================================================================== */
-const dbAreaLogic = [
-    {area: "1. Ha Noi", AVGSKUperIVC: "3.58280657395702", ActiveC: "1062"},
-{area: "1. HCMC", AVGSKUperIVC: "1.65478339350181", ActiveC: "1482"},
-{area: "2. North Coast", AVGSKUperIVC: "1.60526315789474", ActiveC: "108"},
-{area: "2. North Mekong", AVGSKUperIVC: "2.76992896606156", ActiveC: "1756"},
-{area: "3. North West", AVGSKUperIVC: "3.2816091954023", ActiveC: "112"},
-{area: "3. South Mekong", AVGSKUperIVC: "1.82848392036753", ActiveC: "2199"},
-{area: "4. Eastern", AVGSKUperIVC: "2.11958041958042", ActiveC: "1823"},
-{area: "4. North East", AVGSKUperIVC: "2.76534296028881", ActiveC: "615"},
-{area: "5. HLEC", AVGSKUperIVC: "1.80844155844156", ActiveC: "242"},
-{area: "6. Central", AVGSKUperIVC: "2.25127161749746", ActiveC: "573"},
-
-];
-
-/* ==========================================================================
-   3. DÁN MẢNG KAE LOGIC VÀO DƯỚI ĐÂY (Dành cho góc nhìn Cả tuần)
-   ========================================================================== */
-const dbKaeLogic = [
-    {KAE: "KAE Đặng Văn Trung", AVGSKUperIVC: "2.77868852459016", ActiveC: "75"},
-{KAE: "KAE Đỗ Thị Minh", AVGSKUperIVC: "2.85714285714286", ActiveC: "83"},
-{KAE: "KAE Nguyễn Hồng Phong", AVGSKUperIVC: "4.84065934065934", ActiveC: "133"},
-{KAE: "KAE Nguyễn Thị Thơm", AVGSKUperIVC: "5.95104895104895", ActiveC: "111"},
-{KAE: "KAE Nguyễn Trọng Kiên", AVGSKUperIVC: "2.74342105263158", ActiveC: "89"},
-{KAE: "KAE Ninh Công Thành", AVGSKUperIVC: "4.21686746987952", ActiveC: "148"},
-{KAE: "KAE Phạm Sỹ Hùng", AVGSKUperIVC: "1.6551724137931", ActiveC: "135"},
-{KAE: "KAE Phạm Văn Huế", AVGSKUperIVC: "2.48701298701299", ActiveC: "71"},
-{KAE: "KAE Trần Xuân Quỳnh", AVGSKUperIVC: "4.89847715736041", ActiveC: "129"},
-{KAE: "KAE Vũ Quang Phúc", AVGSKUperIVC: "1.54285714285714", ActiveC: "93"},
-{KAE: "DSR Lương Thành Phát", AVGSKUperIVC: "1.1047619047619", ActiveC: "83"},
-{KAE: "DSR Nguyễn Tuyết Trinh", AVGSKUperIVC: "1.08108108108108", ActiveC: "29"},
-{KAE: "KAE Đặng Thị Thùy Dương", AVGSKUperIVC: "2.72222222222222", ActiveC: "129"},
-{KAE: "KAE Đỗ Chí Công", AVGSKUperIVC: "1", ActiveC: "54"},
-{KAE: "KAE Dương Tiểu Dung", AVGSKUperIVC: "1.44444444444444", ActiveC: "97"},
-{KAE: "KAE Lâm Thị Cẩm Linh", AVGSKUperIVC: "1.09836065573771", ActiveC: "99"},
-{KAE: "KAE Lê Anh Quốc", AVGSKUperIVC: "2.14285714285714", ActiveC: "19"},
-{KAE: "KAE Lê Hữu Trực", AVGSKUperIVC: "1.29411764705882", ActiveC: "94"},
-{KAE: "KAE Lê Thị Trúc Phương", AVGSKUperIVC: "1.34591194968553", ActiveC: "94"},
-{KAE: "KAE Lê Văn Hải", AVGSKUperIVC: "3.35947712418301", ActiveC: "92"},
-{KAE: "KAE Ngô Quang Vinh", AVGSKUperIVC: "2", ActiveC: "6"},
-{KAE: "KAE Nguyễn Phúc Hậu", AVGSKUperIVC: "1", ActiveC: "2"},
-{KAE: "KAE Nguyễn Thị Sao Mai Anh", AVGSKUperIVC: "1.10169491525424", ActiveC: "107"},
-{KAE: "KAE Nguyễn Thị Thúy", AVGSKUperIVC: "2.86666666666667", ActiveC: "84"},
-{KAE: "KAE Nguyễn Trị Đạt", AVGSKUperIVC: "1.56756756756757", ActiveC: "55"},
-{KAE: "KAE Nguyễn Văn Thắng", AVGSKUperIVC: "1", ActiveC: "10"},
-{KAE: "KAE Phạm Quốc Khánh", AVGSKUperIVC: "1.15384615384615", ActiveC: "71"},
-{KAE: "KAE Phạm Thị Mỹ Hạnh", AVGSKUperIVC: "1.65671641791045", ActiveC: "45"},
-{KAE: "KAE Tăng Tuấn Thi", AVGSKUperIVC: "1.82857142857143", ActiveC: "59"},
-{KAE: "KAE Trần Minh Toàn", AVGSKUperIVC: "1.32544378698225", ActiveC: "110"},
-{KAE: "KAE Trương Văn Tới", AVGSKUperIVC: "1.04597701149425", ActiveC: "70"},
-{KAE: "KAE Võ Minh Thành", AVGSKUperIVC: "1.53623188405797", ActiveC: "102"},
-{KAE: "KAE Nguyễn Thị Hằng", AVGSKUperIVC: "1.60526315789474", ActiveC: "108"},
-{KAE: "DSR Đặng Phạm Thành Huy", AVGSKUperIVC: "3.06896551724138", ActiveC: "103"},
-{KAE: "DSR Huỳnh Văn Khánh", AVGSKUperIVC: "3.36231884057971", ActiveC: "97"},
-{KAE: "DSR New", AVGSKUperIVC: "1", ActiveC: "1"},
-{KAE: "DSR Nguyễn Hoàng Bào", AVGSKUperIVC: "3.18666666666667", ActiveC: "108"},
-{KAE: "DSR Nguyễn Thanh Tân", AVGSKUperIVC: "3.78518518518519", ActiveC: "109"},
-{KAE: "KAE Bùi Tấn Minh", AVGSKUperIVC: "2.9468085106383", ActiveC: "74"},
-{KAE: "KAE Đồng Công Tuấn Anh", AVGSKUperIVC: "1.39090909090909", ActiveC: "107"},
-{KAE: "KAE Huỳnh Minh Quang", AVGSKUperIVC: "2.97093023255814", ActiveC: "84"},
-{KAE: "KAE Lê Bảo Trung", AVGSKUperIVC: "2.37254901960784", ActiveC: "47"},
-{KAE: "KAE Lê Đình Vĩnh Long", AVGSKUperIVC: "3.58823529411765", ActiveC: "17"},
-{KAE: "KAE Lê Nhựt Trường", AVGSKUperIVC: "2.71028037383178", ActiveC: "123"},
-{KAE: "KAE Lê Quang Đức", AVGSKUperIVC: "3.21774193548387", ActiveC: "100"},
-{KAE: "KAE Lê Thanh Hùng", AVGSKUperIVC: "2.31958762886598", ActiveC: "147"},
-{KAE: "KAE Lê Thị Mỹ Linh", AVGSKUperIVC: "2.66025641025641", ActiveC: "112"},
-{KAE: "KAE Ngô Thanh Tú", AVGSKUperIVC: "2.58333333333333", ActiveC: "108"},
-{KAE: "KAE Nguyễn Hải Phi", AVGSKUperIVC: "3.96739130434783", ActiveC: "73"},
-{KAE: "KAE Nguyễn Thành Hưng", AVGSKUperIVC: "4.032", ActiveC: "107"},
-{KAE: "KAE Nguyễn Thành Trung", AVGSKUperIVC: "2.54362416107383", ActiveC: "101"},
-{KAE: "KAE Phạm Ngọc Hoài", AVGSKUperIVC: "2", ActiveC: "6"},
-{KAE: "KAE Quách Thanh Phong", AVGSKUperIVC: "1.6566265060241", ActiveC: "106"},
-{KAE: "KAE Võ Phước Hữu", AVGSKUperIVC: "2.26829268292683", ActiveC: "34"},
-{KAE: "KAE Nguyễn Đức Toàn", AVGSKUperIVC: "3.2816091954023", ActiveC: "112"},
-{KAE: "DSR Bùi Thị Kim Hoa", AVGSKUperIVC: "1", ActiveC: "7"},
-{KAE: "DSR Hàng Hiểu Hân", AVGSKUperIVC: "1.84046692607004", ActiveC: "133"},
-{KAE: "DSR Nguyễn Thanh Sang", AVGSKUperIVC: "4.64197530864198", ActiveC: "99"},
-{KAE: "DSR Nguyễn Thị Kim Hoài", AVGSKUperIVC: "1.27522935779817", ActiveC: "77"},
-{KAE: "DSR Nguyễn Văn Khá", AVGSKUperIVC: "1.02040816326531", ActiveC: "43"},
-{KAE: "DSR Tiêu Tấn Trung", AVGSKUperIVC: "2.73626373626374", ActiveC: "69"},
-{KAE: "DSR Trần Tiến Hưng", AVGSKUperIVC: "1", ActiveC: "2"},
-{KAE: "DSR Trần Văn Tỉnh", AVGSKUperIVC: "1.14925373134328", ActiveC: "51"},
-{KAE: "DSR Trương Phước Hậu", AVGSKUperIVC: "1.75510204081633", ActiveC: "45"},
-{KAE: "KAE Bùi Tấn Thanh", AVGSKUperIVC: "1.89041095890411", ActiveC: "65"},
-{KAE: "KAE Châu Hồng Hòa", AVGSKUperIVC: "1.70588235294118", ActiveC: "49"},
-{KAE: "KAE Đỗ Thanh Ấm", AVGSKUperIVC: "1", ActiveC: "11"},
-{KAE: "KAE Huỳnh Quan Quyền", AVGSKUperIVC: "1.40277777777778", ActiveC: "89"},
-{KAE: "KAE Huỳnh Tấn Khả", AVGSKUperIVC: "1", ActiveC: "1"},
-{KAE: "KAE Huỳnh Trung Hậu", AVGSKUperIVC: "1.35632183908046", ActiveC: "62"},
-{KAE: "KAE Lâm Trí Dũng", AVGSKUperIVC: "1", ActiveC: "18"},
-{KAE: "KAE Lê Hoàng Khương", AVGSKUperIVC: "2.0042735042735", ActiveC: "122"},
-{KAE: "KAE Lê Hồng Dân", AVGSKUperIVC: "1.31818181818182", ActiveC: "29"},
-{KAE: "KAE Lê Thị Bé Kiều", AVGSKUperIVC: "1.40462427745665", ActiveC: "110"},
-{KAE: "KAE Lê Tuấn Anh", AVGSKUperIVC: "1.11578947368421", ActiveC: "74"},
-{KAE: "KAE Nguyễn Đức Lâm", AVGSKUperIVC: "1.30327868852459", ActiveC: "98"},
-{KAE: "KAE Nguyễn Hoàng Liêu", AVGSKUperIVC: "2.2", ActiveC: "81"},
-{KAE: "KAE Nguyễn Minh Đăng", AVGSKUperIVC: "1", ActiveC: "1"},
-{KAE: "KAE Nguyễn Quý Ngọc", AVGSKUperIVC: "1.4344262295082", ActiveC: "99"},
-{KAE: "KAE Nguyễn Thị Bích Trâm", AVGSKUperIVC: "3.61946902654867", ActiveC: "103"},
-{KAE: "KAE Nguyễn Thùy Như", AVGSKUperIVC: "1.72727272727273", ActiveC: "9"},
-{KAE: "KAE Phùng Văn Tâm", AVGSKUperIVC: "1.90532544378698", ActiveC: "122"},
-{KAE: "KAE Trần Ngọc Trân", AVGSKUperIVC: "1.28901734104046", ActiveC: "94"},
-{KAE: "KAE Trần Quan Bạo", AVGSKUperIVC: "1.12676056338028", ActiveC: "59"},
-{KAE: "KAE Võ Hoàng Văn", AVGSKUperIVC: "1.60416666666667", ActiveC: "70"},
-{KAE: "KAE Võ Thanh Kiệt", AVGSKUperIVC: "1.35", ActiveC: "19"},
-{KAE: "KAE Võ Thị Kiều Diễm", AVGSKUperIVC: "1.78313253012048", ActiveC: "90"},
-{KAE: "KAE Võ Thị Kiều Trinh", AVGSKUperIVC: "1.925", ActiveC: "91"},
-{KAE: "KAE Vương Trần Vui", AVGSKUperIVC: "1.32291666666667", ActiveC: "135"},
-{KAE: "DSR Đặng Minh Đức", AVGSKUperIVC: "3.18407960199005", ActiveC: "142"},
-{KAE: "DSR Nguyễn Ngọc Khôi", AVGSKUperIVC: "1.34920634920635", ActiveC: "103"},
-{KAE: "DSR Nguyễn Văn Phúc", AVGSKUperIVC: "2.07692307692308", ActiveC: "100"},
-{KAE: "KAE Đặng Thị Minh Hậu", AVGSKUperIVC: "3.75568181818182", ActiveC: "107"},
-{KAE: "KAE Điểu Tấn Khương", AVGSKUperIVC: "1.51408450704225", ActiveC: "99"},
-{KAE: "KAE Đinh Thị Huế", AVGSKUperIVC: "1.49152542372881", ActiveC: "48"},
-{KAE: "KAE Đinh Vương Quyền", AVGSKUperIVC: "2.23157894736842", ActiveC: "117"},
-{KAE: "KAE Huỳnh Văn Phố", AVGSKUperIVC: "1.1304347826087", ActiveC: "23"},
-{KAE: "KAE Lê Hoàng Yến Nhi", AVGSKUperIVC: "3.0551724137931", ActiveC: "96"},
-{KAE: "KAE Lục Văn Duy", AVGSKUperIVC: "1.25", ActiveC: "4"},
-{KAE: "KAE Nguyễn Quốc Thiên", AVGSKUperIVC: "1.94915254237288", ActiveC: "95"},
-{KAE: "KAE Nguyễn Thành Phát", AVGSKUperIVC: "1.5", ActiveC: "36"},
-{KAE: "KAE Nguyễn Thanh Phương", AVGSKUperIVC: "1.46913580246914", ActiveC: "97"},
-{KAE: "KAE Nguyễn Thị Mai Trâm", AVGSKUperIVC: "1.56692913385827", ActiveC: "97"},
-{KAE: "KAE Nguyễn Thị Ngọc Hạnh", AVGSKUperIVC: "2.02857142857143", ActiveC: "29"},
-{KAE: "KAE Nguyễn Thị Thuyết", AVGSKUperIVC: "1.82905982905983", ActiveC: "76"},
-{KAE: "KAE Nguyễn Trường Thánh", AVGSKUperIVC: "1.51282051282051", ActiveC: "60"},
-{KAE: "KAE Nguyễn Văn Thành", AVGSKUperIVC: "2.01851851851852", ActiveC: "112"},
-{KAE: "KAE Phạm Đình Đình", AVGSKUperIVC: "3.68604651162791", ActiveC: "71"},
-{KAE: "KAE Phạm Văn Mẫn", AVGSKUperIVC: "1.11486486486486", ActiveC: "91"},
-{KAE: "KAE Phan Thị Nhùng", AVGSKUperIVC: "1.66666666666667", ActiveC: "15"},
-{KAE: "KAE Vũ Thị Sao", AVGSKUperIVC: "1.30821917808219", ActiveC: "103"},
-{KAE: "KAE Vũ Văn Nghĩa", AVGSKUperIVC: "3.03164556962025", ActiveC: "103"},
-{KAE: "KAM Đặng Hoàng Sơn", AVGSKUperIVC: "1", ActiveC: "2"},
-{KAE: "DSR Đinh Thị Hồng Nhung", AVGSKUperIVC: "6.13223140495868", ActiveC: "91"},
-{KAE: "DSR Nguyễn Anh Tuấn", AVGSKUperIVC: "2.29213483146067", ActiveC: "136"},
-{KAE: "DSR Vũ Thị Hải Yên", AVGSKUperIVC: "2.56716417910448", ActiveC: "121"},
-{KAE: "KAE Lê Duy Thịnh", AVGSKUperIVC: "2.66666666666667", ActiveC: "12"},
-{KAE: "KAE Lương Thị Bẩy", AVGSKUperIVC: "2", ActiveC: "3"},
-{KAE: "KAE Phạm Thị Hiển", AVGSKUperIVC: "1.65625", ActiveC: "113"},
-{KAE: "KAE Tống Hoàng Thành", AVGSKUperIVC: "1.52380952380952", ActiveC: "21"},
-{KAE: "KAE Vũ Xuân Khải", AVGSKUperIVC: "2.44705882352941", ActiveC: "124"},
-{KAE: "KAE Lê Văn Hưng", AVGSKUperIVC: "1.90810810810811", ActiveC: "156"},
-{KAE: "KAE Lê Văn Nghĩa", AVGSKUperIVC: "2", ActiveC: "9"},
-{KAE: "KAE Nguyễn Hữu Công Hạnh", AVGSKUperIVC: "1.625", ActiveC: "77"},
-{KAE: "KAE Nguyễn Ngọc Phong", AVGSKUperIVC: "4.02040816326531", ActiveC: "84"},
-{KAE: "KAE Nguyễn Văn Huy", AVGSKUperIVC: "1.44585987261146", ActiveC: "83"},
-{KAE: "KAE Trần Nhật Anh", AVGSKUperIVC: "1.2969696969697", ActiveC: "103"},
-{KAE: "KAE Trương Công Chính", AVGSKUperIVC: "4.10526315789474", ActiveC: "77"},
-{KAE: "KAE Võ Minh Luận", AVGSKUperIVC: "2.1042654028436", ActiveC: "114"},
-{KAE: "KAE Võ Văn Hy", AVGSKUperIVC: "1.66826923076923", ActiveC: "112"},
 ];
 
 let filters = { week: "all", hq: "all", area: "all", kam: "all", kae: "all" };
@@ -4104,32 +3950,34 @@ function drawChart(chartId, dataArray, labelKey) {
             datasets: [
                 { type:'line', label: t('legSales'), data: dataArray.map(x=>x.s), borderColor:'#185FA5', backgroundColor:'#185FA5', yAxisID:'yS', order: 0, tension: 0.3, pointRadius: 5 },
                 { type:'bar', label: t('legTotal'), data: dataArray.map(x=>x.tc), backgroundColor:'#B5D4F4', order: 1 },
-                // Nếu giá trị active customer là "-", ta trả về 0 để không lỗi biểu đồ
-                { type:'bar', label: t('legActive'), data: dataArray.map(x=> (x.ac === "-" ? 0 : x.ac)), backgroundColor:'#378ADD', order: 1 }
+                { type:'bar', label: t('legActive'), data: dataArray.map(x=>x.ac), backgroundColor:'#378ADD', order: 1 }
             ]
         },
         options: getChartOptions()
     });
 }
 
-function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTable = false, isWeekTable = false, showTotal = false, overrideTotals = null) {
-    let renderData = [...dataArray];
+function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTable = false, isWeekTable = false, showTotal = false) {
+    let renderData = [...dataArray]; // Clone mảng để không làm dư cột Tổng trên biểu đồ
     
+    // 1. Tính toán số liệu cho cột TỔNG (nếu được bật)
     if (showTotal) {
         let sumS = 0, sumTc = 0, sumAc = 0, sumSku = 0, countSku = 0;
         
         dataArray.forEach(d => {
             sumS += Number(d.s) || 0;
+            // Nếu không phải là bảng Tuần, ta cộng dồn bình thường
             if (!isWeekTable) {
                 sumTc += Number(d.tc) || 0;
-                if (d.ac !== "-") sumAc += Number(d.ac) || 0;
+                sumAc += Number(d.ac) || 0;
             }
-            if (d.sku !== "-" && Number(d.sku) > 0) { 
+            if (Number(d.sku) > 0) { 
                 sumSku += Number(d.sku); 
                 countSku++; 
             }
         });
 
+        // Nếu là bảng tuần, ta chỉ ghim lấy số lượng khách của tuần mới nhất (tuần cuối cùng)
         if (isWeekTable && dataArray.length > 0) {
             let latestWeekData = dataArray[dataArray.length - 1];
             sumTc = Number(latestWeekData.tc) || 0;
@@ -4140,13 +3988,14 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
             [labelKey]: lang === 'vi' ? "TỔNG" : "TOTAL", 
             s: sumS,
             tc: sumTc,
-            ac: overrideTotals ? overrideTotals.ac : sumAc,
-            sku: overrideTotals ? overrideTotals.sku : (countSku > 0 ? (sumSku / countSku) : 0), 
+            ac: sumAc,
+            sku: countSku > 0 ? (sumSku / countSku) : 0, // Trung bình của các SKU
             route: "-"
         };
         renderData.push(totalObj);
     }
 
+    // 2. Render Header
     if (isWeekTable) {
         const dateMappingVi = {
             "W0": "01.05.2026 -> 03.05.2026",
@@ -4168,31 +4017,35 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
             renderData.map(x => {
                 let isTotalCol = showTotal && x === renderData[renderData.length - 1];
                 let subText = activeMapping[x[labelKey]] || '';
+                // Ẩn dòng subtext (ngày tháng) nếu là cột TỔNG, đồng thời tô đậm tiêu đề
                 return `<th style="${isTotalCol ? 'background: #042C53;' : ''}">${x[labelKey]}${(!isTotalCol && subText) ? `<br><span style="font-size:10px; font-weight:normal; color:#e2e8f0; display:block; margin-top:3px;">${subText}</span>` : ''}</th>`;
             }).join("");
     } else {
         document.getElementById(headerId).innerHTML = `<th class="label-cell">${titleColName}</th>` + renderData.map(x => {
             let isTotalCol = showTotal && x === renderData[renderData.length - 1];
+            // Nổi bật tiêu đề cột Tổng
             return `<th style="${isTotalCol ? 'background: #042C53;' : ''}">${x[labelKey]}</th>`;
         }).join("");
     }
     
+    // 3. Render Body
     let rows = [];
     if (isKaeTable) {
         rows.push({ l: t('rowRoute'), k: "route", f: v => `<span style="color:var(--b6); font-weight:600">${v || "-"}</span>` });
     }
     
     rows.push(
-        { l: t('rowTotal'), k: "tc", f: v => v === "-" ? "-" : fmt(v) },
-        { l: t('rowActive'), k: "ac", f: v => v === "-" ? "-" : `<b style="color:green">${fmt(v)}</b>` },
-        { l: t('rowSales'), k: "s", f: v => v === "-" ? "-" : fmt(v) },
-        { l: t('rowSku'), k: "sku", f: v => v === "-" ? "-" : `<span style="color:var(--b5); font-weight:700">${Number(v||0).toFixed(1)}</span>` },
-        { l: t('rowStrike'), k: "r", f: (_, i) => (i.tc > 0 && i.ac !== "-") ? `<b>${(i.ac/i.tc*100).toFixed(1)}%</b>` : '-' }
+        { l: t('rowTotal'), k: "tc", f: v => fmt(v) },
+        { l: t('rowActive'), k: "ac", f: v => `<b style="color:green">${fmt(v)}</b>` },
+        { l: t('rowSales'), k: "s", f: v => fmt(v) },
+        { l: t('rowSku'), k: "sku", f: v => `<span style="color:var(--b5); font-weight:700">${Number(v||0).toFixed(1)}</span>` },
+        { l: t('rowStrike'), k: "r", f: (_, i) => `<b>${(i.tc>0?(i.ac/i.tc*100).toFixed(1):0)}%</b>` }
     );
 
     document.getElementById(bodyId).innerHTML = rows.map(r => 
         `<tr><td class="label-cell">${r.l}</td>${renderData.map(item => {
             let isTotalCol = showTotal && item === renderData[renderData.length - 1];
+            // Highlight nhẹ ô giá trị của cột Tổng
             let tdStyle = isTotalCol ? 'background: var(--b1); font-weight: bold;' : '';
             return `<td style="${tdStyle}">${r.f(item[r.k], item)}</td>`;
         }).join("")}</tr>`
@@ -4303,17 +4156,6 @@ function render() {
             sku: countArea > 0 ? (sumSkuArea / countArea) : 0
         };
     });
-
-    if (filters.week === "all") {
-        areaData.forEach(item => {
-            const matchData = dbAreaLogic.find(x => x.area === item.label);
-            if (matchData) {
-                item.ac = Number(matchData.ActiveC) || 0;
-                item.sku = Number(matchData.AVGSKUperIVC) || 0;
-            }
-        });
-    }
-
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true);
 
@@ -4357,35 +4199,12 @@ function render() {
     const kaeLatestData = filters.week === "all" ? kaeDataRaw.filter(d => d.week === latestWeek) : kaeDataRaw;
     
     const kaeDayData = getDayData(kaeDataRaw);
-
-    let kaeAcBox = kaeLatestData.reduce((a,b)=>a+(Number(b.activeC)||0),0);
-    const kaeTcBox = kaeLatestData.reduce((a,b)=>a+(Number(b.totalC)||0),0);
-
-    let overrideKaeTotals = null;
-    if (filters.week === "all") {
-        kaeDayData.forEach(d => {
-            d.ac = "-"; 
-            d.sku = "-";
-        });
-        
-        if (filters.kae !== "all") {
-            const cleanKaeName = filters.kae.replace(/✔️|❌|DSR|KAE/g, '').trim(); 
-            const matchData = dbKaeLogic.find(x => x.KAE && x.KAE.includes(cleanKaeName));
-            
-            if (matchData) {
-                kaeAcBox = Number(matchData.ActiveC) || 0;
-                overrideKaeTotals = {
-                    ac: Number(matchData.ActiveC) || 0,
-                    sku: Number(matchData.AVGSKUperIVC) || 0
-                };
-            }
-        }
-    }
-
     drawChart('dayChart', kaeDayData, 'd');
-    drawTable('dayHeaderRow', 'dayTableBody', kaeDayData, t('tblColDay'), 'd', true, false, true, overrideKaeTotals); 
+    drawTable('dayHeaderRow', 'dayTableBody', kaeDayData, t('tblColDay'), 'd', true, false, true); 
 
     const kaeSalesBox = kaeDataRaw.reduce((a,b)=>a+(Number(b.sales)||0),0);
+    const kaeAcBox = kaeLatestData.reduce((a,b)=>a+(Number(b.activeC)||0),0);
+    const kaeTcBox = kaeLatestData.reduce((a,b)=>a+(Number(b.totalC)||0),0);
     const kaeBuyingRate = kaeTcBox > 0 ? (kaeAcBox / kaeTcBox * 100).toFixed(1) + "%" : "0%";
 
     const kaeContribToArea = areaSalesTotal > 0 ? (kaeSalesBox / areaSalesTotal * 100).toFixed(1) + "%" : "0%";
@@ -4402,6 +4221,7 @@ function render() {
     const allWeeks = [...new Set(db.map(d => d.week))].filter(Boolean).sort(); 
     
     const weekData = allWeeks.map(w => {
+        // Cập nhật để lọc bao gồm cả bộ lọc KAM và KAE
         const wDataRaw = db.filter(d => 
             d.week === w &&
             (filters.hq === "all" || d.hq === filters.hq) &&
@@ -4410,6 +4230,7 @@ function render() {
             (filters.kae === "all" || d.kae === filters.kae)
         );
         
+        // Tính toán SKU cho Bảng Tuần
         let sumSkuWeek = 0, countWeek = 0;
         wDataRaw.forEach(d => {
             const val = Number(d.AVGSKUperIVC) || 0;
@@ -4421,7 +4242,7 @@ function render() {
             s: wDataRaw.reduce((sum, i) => sum + (Number(i.sales) || 0), 0),
             ac: wDataRaw.reduce((sum, i) => sum + (Number(i.activeC) || 0), 0),
             tc: wDataRaw.reduce((sum, i) => sum + (Number(i.totalC) || 0), 0),
-            sku: countWeek > 0 ? (sumSkuWeek / countWeek) : 0
+            sku: countWeek > 0 ? (sumSkuWeek / countWeek) : 0 // Trả về biến SKU
         };
     });
 
