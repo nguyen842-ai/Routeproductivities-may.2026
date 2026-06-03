@@ -9,15 +9,33 @@
            ========================================================= */
         :root {
             --b1:#E6F1FB; --b2:#B5D4F4; --b3:#85B7EB; --b4:#378ADD; --b5:#185FA5; --b6:#0C447C; --b7:#042C53;
-            --sidebar-width: 440px;
+            --sidebar-width: 440px; /* Độ rộng mặc định */
         }
         body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f4f8; color: var(--b7); font-size: 13px; }
         .db-container { display: flex; min-height: 100vh; }
 
         .sidebar {
-            width: var(--sidebar-width); background: white; padding: 20px; border-right: 1px solid var(--b2);
+            width: var(--sidebar-width); 
+            flex-shrink: 0; /* Ngăn sidebar bị ép nhỏ khi màn hình hẹp */
+            background: white; padding: 20px; 
             position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
         }
+        
+        /* THANH KÉO (RESIZER) */
+        .resizer {
+            width: 6px;
+            background: var(--b2);
+            cursor: col-resize; /* Biểu tượng chuột kéo ngang */
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+        .resizer:hover, .resizer.resizing {
+            background: var(--b5); /* Đổi màu khi hover hoặc đang kéo */
+        }
+
         .header-wrap { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--b4); padding-bottom: 8px; margin-bottom: 5px; }
         .sidebar-header { font-size: 14px; font-weight: 800; color: var(--b6); text-transform: uppercase; }
         
@@ -40,7 +58,7 @@
         .list-item:hover { background: var(--b1); }
         .list-item.selected { background: var(--b4); color: white; font-weight: 600; }
 
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .main-content { flex: 1; min-width: 0; padding: 25px; overflow-y: auto; }
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
         .kpi-card { background: white; border-radius: 10px; padding: 18px; border: 1px solid var(--b2); text-align: center; }
         .kpi-card .label { font-size: 11px; color: var(--b5); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
@@ -57,6 +75,9 @@
         .data-table th { background: var(--b5); color: white; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .data-table td { padding: 10px 12px; border: 1px solid #f1f5f9; text-align: center; line-height: 1.4; }
         .label-cell { background: var(--b1); color: var(--b6); font-weight: 800; text-align: left !important; width: 160px; position: sticky; left: 0; z-index: 2; }
+        
+        /* Ngăn chữ bị bôi đen khi đang kéo chuột */
+        .no-select { user-select: none; }
     </style>
 </head>
 <body>
@@ -116,6 +137,8 @@
             </div>
         </div>
     </div>
+    
+    <div class="resizer" id="dragMe"></div>
 
     <main class="main-content">
         
@@ -14703,7 +14726,6 @@ const db = [
  { month: "May", hq: "2.North", area: "4. North East", kam: "NGUYỄN ĐÌNH THÁI", kae: "✔️ DSR Đinh Thị Hồng Nhung", route: "F4", week: "W1", day: "Tue", cusCode: "WM01144", sales: 1042493.51851852, totalC: 218, skuLines: 6 }, 
  { month: "May", hq: "2.North", area: "4. North East", kam: "NGUYỄN ĐÌNH THÁI", kae: "✔️ DSR Đinh Thị Hồng Nhung", route: "F4", week: "W3", day: "Tue", cusCode: "WM01144", sales: 1473116.66666667, totalC: 218, skuLines: 7 }, 
  { month: "May", hq: "2.North", area: "4. North East", kam: "NGUYỄN ĐÌNH THÁI", kae: "✔️ DSR Đinh Thị Hồng Nhung", route: "F4", week: "W4", day: "Tue", cusCode: "WM01144", sales: 2083266.66666667, totalC: 218, skuLines: 6 }, 
-
 ];
 
 let filters = { month: "all", week: "all", hq: "all", area: "all", kam: "all", kae: "all" };
@@ -14722,7 +14744,7 @@ const parseDay = (dayStr) => {
     if (d.includes("thu") || d === "t5" || d === "5") return 3;
     if (d.includes("fri") || d === "t6" || d === "6") return 4;
     if (d.includes("sat") || d === "t7" || d === "7") return 5;
-    return -1; // Bỏ qua Chủ nhật (Sun)
+    return -1; 
 };
 
 const aggregateData = (dataSubset) => {
@@ -14753,6 +14775,37 @@ const aggregateData = (dataSubset) => {
     return { s: sales, tc: totalC, ac: activeC, avgSku: avgSku };
 };
 
+/* ==========================================================================
+   >>> HÀM KHỞI TẠO THANH KÉO (RESIZER) <<<
+   ========================================================================== */
+function initResizer() {
+    const resizer = document.getElementById('dragMe');
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', function(e) {
+        isResizing = true;
+        document.body.classList.add('no-select'); // Tránh bôi đen chữ
+        resizer.classList.add('resizing');
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isResizing) return;
+        // Giới hạn độ rộng sidebar từ 250px đến 700px
+        let newWidth = e.clientX;
+        if (newWidth < 250) newWidth = 250;
+        if (newWidth > 700) newWidth = 700;
+        document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if (isResizing) {
+            isResizing = false;
+            document.body.classList.remove('no-select');
+            resizer.classList.remove('resizing');
+        }
+    });
+}
+
 function init() {
     ['monthFilter', 'weekFilter', 'hqFilter', 'areaFilter'].forEach(id => {
         document.getElementById(id).addEventListener('change', e => { 
@@ -14761,6 +14814,7 @@ function init() {
         });
     });
     setLang('vi'); 
+    initResizer(); // Kích hoạt Resizer
 }
 
 function updateF(type, val) {
@@ -14838,9 +14892,9 @@ function drawChart(chartId, dataArray, labelKey) {
         data: {
             labels: dataArray.map(x => x[labelKey]),
             datasets: [
-                { type:'line', label: t('legSales'), data: dataArray.map(x => x.s), borderColor:'#185FA5', backgroundColor:'#185FA5', yAxisID:'yS', order: 0, tension: 0.3, pointRadius: 5 },
-                { type:'bar', label: t('legTotal'), data: dataArray.map(x => x.tc), backgroundColor:'#B5D4F4', order: 1 },
-                { type:'bar', label: t('legActive'), data: dataArray.map(x => x.ac), backgroundColor:'#378ADD', order: 1 }
+                { type:'line', label: t('legSales'), data: dataArray.map(x => (x.s === "-" ? null : x.s)), borderColor:'#185FA5', backgroundColor:'#185FA5', yAxisID:'yS', order: 0, tension: 0.3, pointRadius: 5 },
+                { type:'bar', label: t('legTotal'), data: dataArray.map(x => (x.tc === "-" ? null : x.tc)), backgroundColor:'#B5D4F4', order: 1 },
+                { type:'bar', label: t('legActive'), data: dataArray.map(x => (x.ac === "-" ? null : x.ac)), backgroundColor:'#378ADD', order: 1 }
             ]
         },
         options: getChartOptions()
@@ -14873,11 +14927,11 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
     if (isKaeTable) { rows.push({ l: t('rowRoute'), k: "route", f: v => `<span style="color:var(--b6); font-weight:600">${v || "-"}</span>` }); }
     
     rows.push(
-        { l: t('rowTotal'), k: "tc", f: v => fmt(v) },
-        { l: t('rowActive'), k: "ac", f: v => `<b style="color:green">${fmt(v)}</b>` },
-        { l: t('rowSales'), k: "s", f: v => fmt(v) },
-        { l: t('rowSku'), k: "avgSku", f: v => `<span style="color:var(--b5); font-weight:700">${Number(v||0).toFixed(1)}</span>` },
-        { l: t('rowStrike'), k: "r", f: (_, i) => (i.tc > 0) ? `<b>${(i.ac/i.tc*100).toFixed(1)}%</b>` : '-' }
+        { l: t('rowTotal'), k: "tc", f: v => v === "-" ? "-" : fmt(v) },
+        { l: t('rowActive'), k: "ac", f: v => v === "-" ? "-" : `<b style="color:green">${fmt(v)}</b>` },
+        { l: t('rowSales'), k: "s", f: v => v === "-" ? "-" : fmt(v) },
+        { l: t('rowSku'), k: "avgSku", f: v => v === "-" ? "-" : `<span style="color:var(--b5); font-weight:700">${Number(v||0).toFixed(1)}</span>` },
+        { l: t('rowStrike'), k: "r", f: (_, i) => (i.tc > 0 && i.tc !== "-" && i.ac !== "-") ? `<b>${(i.ac/i.tc*100).toFixed(1)}%</b>` : '-' }
     );
 
     document.getElementById(bodyId).innerHTML = rows.map(r => 
@@ -14892,7 +14946,8 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
 function render() {
     if (db.length === 0) return; 
     
-    const selectedWeekText = filters.week !== "all" ? (weekDates[lang][filters.week] || "") : weekDates[lang]["all"];
+    const isAllWeeks = filters.week === "all";
+    const selectedWeekText = isAllWeeks ? weekDates[lang]["all"] : (weekDates[lang][filters.week] || "");
     document.querySelectorAll('.chart-subtitle:not([data-i18n="cWeekSubtitle"])').forEach(el => { el.innerText = selectedWeekText; });
 
     const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
