@@ -17592,9 +17592,20 @@ const aggregateData = (dataSubset) => {
         if (d.cusCode && currentSales > 0) cusSet.add(d.cusCode);
         if (currentSales > 0) invoiceCount++;
 
-        const routeKey = d.kae + "|" + d.route;
+        // Fix logic gom nhóm theo: KAE - Tháng - Tuần - Thứ
+        const cleanKae = String(d.kae || "").trim();
+        const cleanMonth = String(d.month || "").trim();
+        const cleanWeek = String(d.week || "").trim();
+        const cleanDay = String(d.day || "").trim();
+        
+        const routeKey = cleanKae + "|" + cleanMonth + "|" + cleanWeek + "|" + cleanDay;
+        
+        // Luôn lấy giá trị khách hàng trên tuyến (totalC) lớn nhất của ngày đó
+        const currentTotalC = Number(d.totalC) || 0;
         if (!routeTotalCMap.has(routeKey)) {
-            routeTotalCMap.set(routeKey, Number(d.totalC) || 0);
+            routeTotalCMap.set(routeKey, currentTotalC);
+        } else {
+            routeTotalCMap.set(routeKey, Math.max(routeTotalCMap.get(routeKey), currentTotalC));
         }
     });
 
