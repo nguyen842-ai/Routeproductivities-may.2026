@@ -17774,11 +17774,33 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
 function render() {
     if (db.length === 0) return; 
     
-    // Dòng mô tả chạy theo bộ lọc cho TẤT CẢ các biểu đồ
-    const filterDesc = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${filters.kam === "all" ? t('optAll') : filters.kam} | KAE: ${filters.kae === "all" ? t('optAll') : filters.kae}`;
-    
-    // Gán cho toàn bộ các subtitle
-    document.querySelectorAll('.chart-subtitle').forEach(el => { el.innerText = filterDesc; });
+    // Tách các thành phần của bộ lọc
+    const fMonth = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()}`;
+    const fRegion = `${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq}`;
+    const fArea = `${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area}`;
+    const fKam = `KAM: ${filters.kam === "all" ? t('optAll') : filters.kam}`;
+    const fKae = `KAE: ${filters.kae === "all" ? t('optAll') : filters.kae}`;
+
+    const baseFilter = `${fMonth} | ${fRegion} | ${fArea}`;
+    const kamFilter = `${baseFilter} | ${fKam}`;
+    const fullFilter = `${kamFilter} | ${fKae}`;
+
+    // Gán mô tả tùy biến cho từng biểu đồ
+    document.querySelectorAll('.chart-box').forEach(box => {
+        const titleEl = box.querySelector('.chart-title');
+        const subEl = box.querySelector('.chart-subtitle');
+        if (!titleEl || !subEl) return;
+        
+        const titleKey = titleEl.getAttribute('data-i18n');
+        
+        if (titleKey === 'cAreaTitle') {
+            subEl.innerText = baseFilter; // Bỏ KAM và KAE
+        } else if (titleKey === 'cKamTitle') {
+            subEl.innerText = kamFilter; // Bỏ KAE
+        } else {
+            subEl.innerText = fullFilter; // Biểu đồ KAE và Tuần giữ nguyên đầy đủ
+        }
+    });
 
     const workingData = db.filter(d => 
         (filters.month === "all" || d.month === filters.month) &&
