@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Route Productivity Dashboard - ULTIMATE EDITION (EXTERNAL KAM MAP)</title>
+    <title>Route Productivity Dashboard - ULTIMATE SPEED EDITION</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -253,7 +253,7 @@ const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 const cleanName = (name, isKamField = false) => {
     let cleanStr = String(name || "").replace(/[✔️❌]/g, '').trim();
     if (isKamField) {
-        cleanStr = cleanStr.toUpperCase(); // 🟢 ÉP IN HOA TOÀN BỘ TÊN KAM
+        cleanStr = cleanStr.toUpperCase(); // Ép in hoa KAM
         if (typeof kamMap !== 'undefined' && kamMap[cleanStr]) {
             return kamMap[cleanStr]; 
         }
@@ -261,18 +261,20 @@ const cleanName = (name, isKamField = false) => {
     return cleanStr;
 };
 
-const getDisplayStatus = (cleanStr, subset, key) => {
+// 🔥 MÁY QUÉT TRẠNG THÁI SIÊU TỐC O(N) 🔥
+const buildStatusMap = (subset, key) => {
+    let map = {};
     let isKamField = (key === 'kam');
     for (let i = subset.length - 1; i >= 0; i--) {
-        if (cleanName(subset[i][key], isKamField) === cleanStr) {
+        let clean = cleanName(subset[i][key], isKamField);
+        if (!map[clean]) {
             let raw = String(subset[i][key]).trim();
-            let match = raw.match(/^[✔️❌]/); 
-            if (match) return match[0] + ' ' + cleanStr; 
+            let match = raw.match(/^[✔️❌]/);
+            map[clean] = match ? match[0] + ' ' + clean : clean;
         }
     }
-    return cleanStr; 
+    return map;
 };
-
 
 // =========================================================
 // 3. ĐỘNG CƠ TÍNH TOÁN HIỆU SUẤT (DUAL ENGINE)
@@ -465,6 +467,7 @@ function setLang(newLang) {
     render();
 }
 
+// 🔥 TÌM GIẬT LÙI: Bấm KAE tự động bốc ông KAM dán lên bộ lọc 
 function updateF(type, val) { 
     filters[type] = val; 
     
@@ -517,21 +520,26 @@ function renderFilters() {
     const fMaster = dbMaster.filter(applyF);
     const fSales = dbSales.filter(applyF);
     
+    // 🔥 Sinh ra túi trạng thái SIÊU TỐC
+    const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
+    const localKamStatus = buildStatusMap(fMaster, 'kam');
+    
     // --- ĐỔ DANH SÁCH KAM ---
     const kList = document.getElementById("kamList");
-    let masterKams = [...new Set(fMaster.map(d => cleanName(d.kam, true)))].filter(Boolean);
+    let masterKamsSet = new Set(fMaster.map(d => cleanName(d.kam, true)));
+    let masterKams = [...masterKamsSet].filter(Boolean);
     let salesKams = [...new Set(fSales.map(d => cleanName(d.kam, true)))].filter(Boolean);
     let allKams = [...new Set([...masterKams, ...salesKams])];
     
     let kamStatusMap = {};
     allKams.forEach(k => {
-        let globalStatus = getDisplayStatus(k, [...dbMaster, ...dbSales], 'kam');
-        if (globalStatus.startsWith('❌')) {
-            kamStatusMap[k] = globalStatus;
-        } else if (!masterKams.includes(k)) {
+        let globalSt = globalKamStatus[k] || k;
+        if (globalSt.startsWith('❌')) {
+            kamStatusMap[k] = globalSt;
+        } else if (!masterKamsSet.has(k)) { 
             kamStatusMap[k] = "🚨 " + k + " (No Plan)";
         } else {
-            kamStatusMap[k] = getDisplayStatus(k, fMaster, 'kam');
+            kamStatusMap[k] = localKamStatus[k] || k;
         }
     });
     
@@ -554,19 +562,23 @@ function renderFilters() {
     const mKaeData = filters.kam === "all" ? fMaster : fMaster.filter(d => cleanName(d.kam, true) === filters.kam);
     const sKaeData = filters.kam === "all" ? fSales : fSales.filter(d => cleanName(d.kam, true) === filters.kam);
 
-    let masterKaes = [...new Set(mKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
+    const globalKaeStatus = buildStatusMap([...dbMaster, ...dbSales], 'kae');
+    const localKaeStatus = buildStatusMap(mKaeData, 'kae');
+
+    let masterKaesSet = new Set(mKaeData.map(d => cleanName(d.kae)));
+    let masterKaes = [...masterKaesSet].filter(Boolean);
     let salesKaes = [...new Set(sKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
     let allKaes = [...new Set([...masterKaes, ...salesKaes])];
 
     let kaeStatusMap = {};
     allKaes.forEach(n => {
-        let globalStatus = getDisplayStatus(n, [...dbMaster, ...dbSales], 'kae');
-        if (globalStatus.startsWith('❌')) {
-            kaeStatusMap[n] = globalStatus;
-        } else if (!masterKaes.includes(n)) {
+        let globalSt = globalKaeStatus[n] || n;
+        if (globalSt.startsWith('❌')) {
+            kaeStatusMap[n] = globalSt;
+        } else if (!masterKaesSet.has(n)) { 
             kaeStatusMap[n] = "🚨 " + n + " (No Plan)";
         } else {
-            kaeStatusMap[n] = getDisplayStatus(n, mKaeData, 'kae');
+            kaeStatusMap[n] = localKaeStatus[n] || n;
         }
     });
 
@@ -652,16 +664,17 @@ function render() {
     const workMaster = dbMaster.filter(applyFilters);
     const workSales = dbSales.filter(applyFilters);
 
+    // Tiêu đề phụ (Bọc thép O(N) cực nhanh)
     const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
     if (subtitleEl) {
-        let displayKamSub = filters.kam === "all" ? t('optAll') : getDisplayStatus(filters.kam, workMaster, 'kam');
-        let displayKaeSub = filters.kae === "all" ? t('optAll') : getDisplayStatus(filters.kae, workMaster, 'kae');
+        const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
+        const globalKaeStatus = buildStatusMap([...dbMaster, ...dbSales], 'kae');
         
-        let globalKam = getDisplayStatus(filters.kam, [...dbMaster, ...dbSales], 'kam');
-        let globalKae = getDisplayStatus(filters.kae, [...dbMaster, ...dbSales], 'kae');
+        let displayKamSub = filters.kam === "all" ? t('optAll') : (globalKamStatus[filters.kam] || filters.kam);
+        let displayKaeSub = filters.kae === "all" ? t('optAll') : (globalKaeStatus[filters.kae] || filters.kae);
 
-        if(filters.kam !== "all") displayKamSub = globalKam.startsWith('❌') ? globalKam : (displayKamSub === filters.kam && !workMaster.some(d => cleanName(d.kam, true)===filters.kam) ? "🚨 " + filters.kam : displayKamSub);
-        if(filters.kae !== "all") displayKaeSub = globalKae.startsWith('❌') ? globalKae : (displayKaeSub === filters.kae && !workMaster.some(d => cleanName(d.kae)===filters.kae) ? "🚨 " + filters.kae : displayKaeSub);
+        if(filters.kam !== "all" && !displayKamSub.startsWith('❌') && !workMaster.some(d => cleanName(d.kam, true)===filters.kam)) displayKamSub = "🚨 " + filters.kam;
+        if(filters.kae !== "all" && !displayKaeSub.startsWith('❌') && !workMaster.some(d => cleanName(d.kae)===filters.kae)) displayKaeSub = "🚨 " + filters.kae;
 
         subtitleEl.innerText = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${displayKamSub} | KAE: ${displayKaeSub}`;
     }
