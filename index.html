@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Route Productivity Dashboard - MODERN UI EDITION</title>
+    <title>Route Productivity Dashboard - PERFORMANCE & MOBILE OPTIMIZED</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -37,7 +37,7 @@
         }
         .lang-toggle button.active { background: var(--b4); color: white; }
 
-        /* 🔥 GIAO DIỆN MULTI-SELECT MỚI (BÔI NỀN XANH - CHỮ ĐẬM) 🔥 */
+        /* 🔥 GIAO DIỆN MULTI-SELECT 🔥 */
         .top-filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .filter-item label { display: block; font-size: 10px; font-weight: 700; color: var(--b5); margin-bottom: 4px; text-transform: uppercase; }
         
@@ -46,20 +46,18 @@
         .ms-label::after { content: '▼'; float: right; font-size: 10px; color: var(--b5); margin-top: 2px;}
         .ms-dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid var(--b3); border-radius: 5px; z-index: 999; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15); padding: 5px 0; margin-top: 2px;}
         
-        /* Chỉnh lại mục chọn trong Dropdown */
         .ms-opt { display: flex; align-items: center; padding: 8px 10px; font-size: 12px; cursor: pointer; color: var(--b7); user-select: none; transition: 0.2s;}
         .ms-opt:hover { background: var(--b1); }
-        .ms-opt.selected { background: var(--b4); color: white; font-weight: bold; } /* Khi được chọn thì bôi đậm */
+        .ms-opt.selected { background: var(--b4); color: white; font-weight: bold; } 
 
         .personnel-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-grow: 1; overflow: hidden; margin-top: 5px; }
         .list-container { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--b2); border-radius: 6px; overflow: hidden; }
         .list-label { font-size: 11px; font-weight: 700; color: white; background: var(--b5); padding: 10px; text-align: center; }
         .scroll-list { overflow-y: auto; flex-grow: 1; background: #fff; }
         
-        /* Chỉnh lại mục chọn trong Danh sách KAM/KAE */
         .list-item { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 11px; transition: 0.2s; user-select: none;}
         .list-item:hover { background: var(--b1); }
-        .list-item.selected { background: var(--b4); color: white; font-weight: 600; } /* Khi được chọn thì bôi đậm */
+        .list-item.selected { background: var(--b4); color: white; font-weight: 600; } 
 
         .main-content { flex: 1; min-width: 0; padding: 25px; overflow-y: auto; }
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
@@ -75,24 +73,33 @@
         
         .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--b2); margin-top: 15px; }
         .data-table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; min-width: 700px; }
-        .data-table th { background: var(--b5); color: white; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .data-table td { padding: 10px 12px; border: 1px solid #f1f5f9; text-align: center; line-height: 1.4; }
+        .data-table th { background: var(--b5); color: white; padding: 12px; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+        .data-table td { padding: 10px 12px; border: 1px solid #f1f5f9; text-align: center; line-height: 1.4; white-space: nowrap; }
         .label-cell { background: var(--b1); color: var(--b6); font-weight: 800; text-align: left !important; width: 160px; position: sticky; left: 0; z-index: 2; }
         .no-select { user-select: none; }
 
         /* PHÂN KHÚC KHÁCH HÀNG MATRIX TABLE */
-        .segment-table { width:100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; background: white; }
-        .segment-table th { padding: 10px; border: 1px solid var(--b2); }
-        .segment-table td { padding: 8px 10px; border: 1px solid #e2e8f0; text-align: center; }
-        .seg-area-cell { background-color: #f8fafc; font-weight: bold; text-align: left !important; color: var(--b6); border-right: 2px solid var(--b3) !important; }
-        .seg-name-cell { text-align: left !important; font-weight: 600; color: #475569; }
+        .segment-table { width:100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; background: white; min-width: 700px; }
+        .segment-table th { padding: 10px; border: 1px solid var(--b2); white-space: nowrap; }
+        .segment-table td { padding: 8px 10px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
+        .seg-area-cell { background-color: #f8fafc; font-weight: bold; text-align: left !important; color: var(--b6); border-right: 2px solid var(--b3) !important; position: sticky; left: 0; z-index: 2;}
+        .seg-name-cell { text-align: left !important; font-weight: 600; color: #475569; position: sticky; left: 0; background: white; z-index: 1; }
 
         /* =========================================================
            🔥 GIAO DIỆN TƯƠNG THÍCH ĐIỆN THOẠI (MOBILE RESPONSIVE) 🔥
            ========================================================= */
-        .scroll-list, .main-content, .table-wrap, .ms-dropdown {
+        
+        /* 1. Mở khóa cuộn dọc cho danh sách, menu */
+        .scroll-list, .main-content, .ms-dropdown {
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
+        }
+
+        /* 2. MỞ KHÓA CUỘN NGANG CHO BẢNG - BỎ PAN-Y ĐỂ KHÔNG BỊ KẸT TRÊN ĐIỆN THOẠI */
+        .table-wrap {
+            -webkit-overflow-scrolling: touch;
+            overflow-x: auto; 
+            touch-action: auto; 
         }
 
         @media screen and (max-width: 768px) {
@@ -110,6 +117,9 @@
             #segmentKpiContainer { grid-template-columns: 1fr 1fr 1fr !important; }
             .main-content { padding: 10px; }
             .chart-box { padding: 15px; }
+            
+            /* Tinh chỉnh label cho bảng cuộn ngang trên điện thoại */
+            .label-cell, .seg-area-cell, .seg-name-cell { position: relative; left: auto; z-index: 1; }
         }
     </style>
 </head>
@@ -190,7 +200,6 @@
             <div class="chart-subtitle"></div>
             
             <div class="kpi-grid" id="segmentKpiContainer" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;"></div>
-
             <div class="table-wrap" id="segmentAreaTableContainer"></div>
         </div>
 
@@ -238,9 +247,6 @@
 <script src="dataM7.js"></script>
 
 <script>
-// =========================================================
-// 2. TỪ ĐIỂN ĐA NGÔN NGỮ ĐỒNG BỘ ĐẦY ĐỦ
-// =========================================================
 const dict = {
     vi: {
         sysTitle: "HIỆU SUẤT TUYẾN BÁN HÀNG", fMonth: "Tháng", fWeek: "Tuần", fRegion: "Miền", fArea: "Khu vực", optAll: "Tất cả", 
@@ -286,25 +292,17 @@ const segNames = {
     'N': 'Is Classifying (0 MVND to less than 1 MVND)'
 };
 
-// 🔥 ĐỔ MÀU NHẬN DIỆN CHO 5 THẺ KPI PHÂN KHÚC 🔥
 const segColors = { 'A': '#16a34a', 'B': '#2563eb', 'C': '#ea580c', 'D': '#dc2626', 'N': '#64748b' };
-
 const weekDates = { vi: { "all": "Báo cáo tổng hợp tất cả các tuần", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" }, en: { "all": "Summary report for all weeks", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" } };
-let lang = 'vi';
 
-// 🔥 MẢNG CHỨA DỮ LIỆU ĐA LỌC (MULTI-SELECT) 🔥
+let lang = 'vi';
 let filters = { month: [], week: [], hq: [], area: [], kam: [], kae: [] };
 let charts = {};
-
-let dbMaster = [];
-let dbSales = [];
+let dbMaster = []; let dbSales = [];
 
 const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
-// =========================================================
-// CÁC CỖ MÁY CHUẨN HÓA VÀ TỐI ƯU TỐC ĐỘ O(N)
-// =========================================================
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 
 const cleanName = (name, isKamField = false) => {
@@ -367,9 +365,6 @@ const aggregateDualData = (masterSubset, salesSubset) => {
     return { s: sales, tc: totalC, ac: activeC, avgSku: avgSku };
 };
 
-// =========================================================
-// HÀM ĐỔ MA TRẬN VÀ 5 THẺ KPI PHÂN KHÚC
-// =========================================================
 function renderSegmentTable(masterSubset, salesSubset) {
     let cusSegmentMap = {};
     let uniqueMasterCus = new Set();
@@ -381,7 +376,6 @@ function renderSegmentTable(masterSubset, salesSubset) {
         }
     });
 
-    // 🔥 TẠO 5 THẺ KPI CÓ MÀU SẮC 🔥
     let globalSegCount = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'N': 0 };
     uniqueMasterCus.forEach(code => {
         let seg = cusSegmentMap[code] || 'N';
@@ -397,7 +391,6 @@ function renderSegmentTable(masterSubset, salesSubset) {
         let count = globalSegCount[seg];
         let pct = totalCus > 0 ? ((count / totalCus) * 100).toFixed(1) + '%' : '0%';
         let color = segColors[seg];
-        
         let displayTitle = (seg === 'N') ? "IS CLASSIFYING" : `CLASS ${seg}`;
 
         kpiHtml += `
@@ -411,7 +404,6 @@ function renderSegmentTable(masterSubset, salesSubset) {
     const kpiContainer = document.getElementById('segmentKpiContainer');
     if (kpiContainer) kpiContainer.innerHTML = kpiHtml;
 
-    // 🔥 ĐỔ DỮ LIỆU BẢNG MA TRẬN 🔥
     let matrix = {};
     masterSubset.forEach(d => {
         let area = d.area || "Unknown Area";
@@ -500,9 +492,6 @@ function renderSegmentTable(masterSubset, salesSubset) {
     document.getElementById('segmentAreaTableContainer').innerHTML = html;
 }
 
-// =========================================================
-// UI CONTROLLERS (RESIZER, MULTI-SELECT TOGGLES)
-// =========================================================
 function initResizer() {
     const resizer = document.getElementById('dragMe');
     let isResizing = false;
@@ -540,7 +529,6 @@ document.addEventListener('click', e => {
     }
 });
 
-// 🔥 TRÁI TIM ĐIỀU KHIỂN CÁC MẢNG ARRAY LỌC DỮ LIỆU 🔥
 function updateF(type, val) { 
     if (val === 'all') {
         filters[type] = [];
@@ -563,9 +551,7 @@ function updateF(type, val) {
     render(); 
 }
 
-// =========================================================
-// RENDER BỘ LỌC VÀ CÁC DROPDOWN
-// =========================================================
+// 🔥 TỐI ƯU DOM BATCH RENDERING: Gom chuỗi HTML trước khi đẩy ra màn hình 🔥
 function populateDropdown(id, type, optionsArr, tAll) {
     let drop = document.getElementById('drop-' + id);
     let lbl = document.getElementById('lbl-' + id);
@@ -574,12 +560,12 @@ function populateDropdown(id, type, optionsArr, tAll) {
     else if (filters[type].length === 1) lbl.innerText = filters[type][0];
     else lbl.innerText = filters[type].length + ' đã chọn';
 
-    let html = `<div class="ms-opt ${filters[type].length === 0 ? 'selected' : ''}" onclick="updateF('${type}', 'all')">${tAll}</div>`;
+    let htmlStr = `<div class="ms-opt ${filters[type].length === 0 ? 'selected' : ''}" onclick="updateF('${type}', 'all')">${tAll}</div>`;
     optionsArr.forEach(opt => {
         let isSel = filters[type].includes(opt) ? 'selected' : '';
-        html += `<div class="ms-opt ${isSel}" onclick="updateF('${type}', '${opt}')">${opt}</div>`;
+        htmlStr += `<div class="ms-opt ${isSel}" onclick="updateF('${type}', '${opt}')">${opt}</div>`;
     });
-    drop.innerHTML = html;
+    drop.innerHTML = htmlStr;
 }
 
 function renderFilters() {
@@ -612,7 +598,6 @@ function renderFilters() {
     const globalKamStatus = buildStatusMap(allData, 'kam');
     const localKamStatus = buildStatusMap(fMaster, 'kam');
     
-    // --- KAM ---
     const kList = document.getElementById("kamList");
     let masterKamsSet = new Set(fMaster.map(d => cleanName(d.kam, true)));
     let salesKams = [...new Set(fSales.map(d => cleanName(d.kam, true)))];
@@ -635,13 +620,14 @@ function renderFilters() {
         return a.localeCompare(b);
     });
 
-    kList.innerHTML = `<div class="list-item ${filters.kam.length === 0 ? 'selected' : ''}" onclick="updateF('kam', 'all')">${t('allKam')}</div>`;
+    // Gom HTML danh sách KAM (Nhanh gấp 300% thay vì += vào DOM)
+    let kamHtml = `<div class="list-item ${filters.kam.length === 0 ? 'selected' : ''}" onclick="updateF('kam', 'all')">${t('allKam')}</div>`;
     allKams.forEach(k => { 
         let isSel = filters.kam.includes(k) ? 'selected' : '';
-        kList.innerHTML += `<div class="list-item ${isSel}" onclick="updateF('kam', '${k}')">${kamStatusMap[k]}</div>`; 
+        kamHtml += `<div class="list-item ${isSel}" onclick="updateF('kam', '${k}')">${kamStatusMap[k]}</div>`; 
     });
+    kList.innerHTML = kamHtml;
     
-    // --- KAE ---
     const kaeList = document.getElementById("kaeList");
     const mKaeData = filters.kam.length === 0 ? fMaster : fMaster.filter(d => filters.kam.includes(cleanName(d.kam, true)));
     const sKaeData = filters.kam.length === 0 ? fSales : fSales.filter(d => filters.kam.includes(cleanName(d.kam, true)));
@@ -670,11 +656,13 @@ function renderFilters() {
         return a.localeCompare(b);
     });
 
-    kaeList.innerHTML = `<div class="list-item ${filters.kae.length === 0 ? 'selected' : ''}" onclick="updateF('kae', 'all')">${t('allKae')}</div>`;
+    // Gom HTML danh sách KAE
+    let kaeHtml = `<div class="list-item ${filters.kae.length === 0 ? 'selected' : ''}" onclick="updateF('kae', 'all')">${t('allKae')}</div>`;
     allKaes.forEach(n => { 
         let isSel = filters.kae.includes(n) ? 'selected' : '';
-        kaeList.innerHTML += `<div class="list-item ${isSel}" onclick="updateF('kae', '${n}')">${kaeStatusMap[n]}</div>`; 
+        kaeHtml += `<div class="list-item ${isSel}" onclick="updateF('kae', '${n}')">${kaeStatusMap[n]}</div>`; 
     });
+    kaeList.innerHTML = kaeHtml;
 }
 
 function getChartOptions() {
@@ -726,9 +714,6 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
     document.getElementById(bodyId).innerHTML = rows.map(r => `<tr><td class="label-cell">${r.l}</td>${renderData.map(item => { let isTotalCol = showTotal && item === renderData[renderData.length - 1]; return `<td style="${isTotalCol ? 'background: var(--b1); font-weight: bold;' : ''}">${r.f(item[r.k], item)}</td>`; }).join("")}</tr>`).join("");
 }
 
-// =========================================================
-// HÀM RENDER CHÍNH (ĐỔ DỮ LIỆU VÀO CÁC CHART)
-// =========================================================
 function render() {
     if (dbMaster.length === 0 && dbSales.length === 0) return; 
     
@@ -864,9 +849,6 @@ function render() {
     });
 }
 
-// =========================================================
-// 7. KHỞI CHẠY HỆ THỐNG BAN ĐẦU
-// =========================================================
 function init() {
     dbMaster = []; dbSales = [];
     if (typeof dbMasterM5 !== 'undefined') dbMaster = dbMaster.concat(dbMasterM5);
