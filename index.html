@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Route Productivity Dashboard - ULTIMATE EDITION</title>
+    <title>Route Productivity Dashboard - ULTIMATE EDITION (EXTERNAL KAM MAP)</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -180,6 +180,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
+<script src="kamMap.js"></script>
+
 <script src="dataM5.js"></script>
 <script src="dataM6.js"></script>
 <script src="dataM7.js"></script>
@@ -246,12 +248,23 @@ const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
 // 🔥 CÁC CỖ MÁY CHUẨN HÓA DỮ LIỆU 🔥
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
-const cleanName = (name) => String(name || "").replace(/[✔️❌]/g, '').trim();
 
-// Máy quét trạng thái đã Nâng Cấp: Quét lùi tìm dấu, tha bổng cho người đã nghỉ
+// Máy giặt tên có map với file bên ngoài
+const cleanName = (name, isKamField = false) => {
+    let cleanStr = String(name || "").replace(/[✔️❌]/g, '').trim();
+    if (isKamField && typeof kamMap !== 'undefined') {
+        let upperStr = cleanStr.toUpperCase();
+        if (kamMap[upperStr]) {
+            return kamMap[upperStr]; 
+        }
+    }
+    return cleanStr;
+};
+
 const getDisplayStatus = (cleanStr, subset, key) => {
+    let isKamField = (key === 'kam');
     for (let i = subset.length - 1; i >= 0; i--) {
-        if (cleanName(subset[i][key]) === cleanStr) {
+        if (cleanName(subset[i][key], isKamField) === cleanStr) {
             let raw = String(subset[i][key]).trim();
             let match = raw.match(/^[✔️❌]/); 
             if (match) return match[0] + ' ' + cleanStr; 
@@ -452,7 +465,6 @@ function setLang(newLang) {
     render();
 }
 
-// 🔥 TÌM GIẬT LÙI: Bấm KAE tự động bốc ông KAM dán lên bộ lọc
 function updateF(type, val) { 
     filters[type] = val; 
     
@@ -461,7 +473,7 @@ function updateF(type, val) {
     } else if (type === 'kae' && val !== 'all') {
         const fKam = dbMaster.find(d => cleanName(d.kae) === val) || dbSales.find(d => cleanName(d.kae) === val);
         if (fKam && fKam.kam) {
-            filters.kam = cleanName(fKam.kam);
+            filters.kam = cleanName(fKam.kam, true); 
         }
     }
     
@@ -507,14 +519,13 @@ function renderFilters() {
     
     // --- ĐỔ DANH SÁCH KAM ---
     const kList = document.getElementById("kamList");
-    let masterKams = [...new Set(fMaster.map(d => cleanName(d.kam)))].filter(Boolean);
-    let salesKams = [...new Set(fSales.map(d => cleanName(d.kam)))].filter(Boolean);
+    let masterKams = [...new Set(fMaster.map(d => cleanName(d.kam, true)))].filter(Boolean);
+    let salesKams = [...new Set(fSales.map(d => cleanName(d.kam, true)))].filter(Boolean);
     let allKams = [...new Set([...masterKams, ...salesKams])];
     
     let kamStatusMap = {};
     allKams.forEach(k => {
         let globalStatus = getDisplayStatus(k, [...dbMaster, ...dbSales], 'kam');
-        // Miễn tử kim bài: Quét toàn kho, có án ❌ thì tha ko thổi còi 🚨
         if (globalStatus.startsWith('❌')) {
             kamStatusMap[k] = globalStatus;
         } else if (!masterKams.includes(k)) {
@@ -540,8 +551,8 @@ function renderFilters() {
     
     // --- ĐỔ DANH SÁCH KAE ---
     const kaeList = document.getElementById("kaeList");
-    const mKaeData = filters.kam === "all" ? fMaster : fMaster.filter(d => cleanName(d.kam) === filters.kam);
-    const sKaeData = filters.kam === "all" ? fSales : fSales.filter(d => cleanName(d.kam) === filters.kam);
+    const mKaeData = filters.kam === "all" ? fMaster : fMaster.filter(d => cleanName(d.kam, true) === filters.kam);
+    const sKaeData = filters.kam === "all" ? fSales : fSales.filter(d => cleanName(d.kam, true) === filters.kam);
 
     let masterKaes = [...new Set(mKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
     let salesKaes = [...new Set(sKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
@@ -635,7 +646,7 @@ function render() {
         (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
         (filters.area === "all" || d.area === filters.area) &&
-        (filters.kam === "all" || cleanName(d.kam) === filters.kam) && 
+        (filters.kam === "all" || cleanName(d.kam, true) === filters.kam) && 
         (filters.kae === "all" || cleanName(d.kae) === filters.kae);
     
     const workMaster = dbMaster.filter(applyFilters);
@@ -649,7 +660,7 @@ function render() {
         let globalKam = getDisplayStatus(filters.kam, [...dbMaster, ...dbSales], 'kam');
         let globalKae = getDisplayStatus(filters.kae, [...dbMaster, ...dbSales], 'kae');
 
-        if(filters.kam !== "all") displayKamSub = globalKam.startsWith('❌') ? globalKam : (displayKamSub === filters.kam && !workMaster.some(d => cleanName(d.kam)===filters.kam) ? "🚨 " + filters.kam : displayKamSub);
+        if(filters.kam !== "all") displayKamSub = globalKam.startsWith('❌') ? globalKam : (displayKamSub === filters.kam && !workMaster.some(d => cleanName(d.kam, true)===filters.kam) ? "🚨 " + filters.kam : displayKamSub);
         if(filters.kae !== "all") displayKaeSub = globalKae.startsWith('❌') ? globalKae : (displayKaeSub === filters.kae && !workMaster.some(d => cleanName(d.kae)===filters.kae) ? "🚨 " + filters.kae : displayKaeSub);
 
         subtitleEl.innerText = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${displayKamSub} | KAE: ${displayKaeSub}`;
@@ -671,11 +682,11 @@ function render() {
     let cKam = filters.kam;
     if (cKam === "all" && filters.kae !== "all") { 
         const fKam = dbMaster.find(d => cleanName(d.kae) === filters.kae) || dbSales.find(d => cleanName(d.kae) === filters.kae); 
-        if (fKam) cKam = cleanName(fKam.kam); 
+        if (fKam) cKam = cleanName(fKam.kam, true); 
     }
     
-    const kamMaster = workMaster.filter(d => cKam === "all" || cleanName(d.kam) === cKam);
-    const kamSalesData = workSales.filter(d => cKam === "all" || cleanName(d.kam) === cKam);
+    const kamMaster = workMaster.filter(d => cKam === "all" || cleanName(d.kam, true) === cKam);
+    const kamSalesData = workSales.filter(d => cKam === "all" || cleanName(d.kam, true) === cKam);
     const kaeMaster = kamMaster.filter(d => filters.kae === "all" || cleanName(d.kae) === filters.kae);
     const kaeSalesData = kamSalesData.filter(d => filters.kae === "all" || cleanName(d.kae) === filters.kae);
 
@@ -720,14 +731,14 @@ function render() {
         (filters.month === "all" || d.month === filters.month) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
         (filters.area === "all" || d.area === filters.area) && 
-        (filters.kam === "all" || cleanName(d.kam) === filters.kam) && 
+        (filters.kam === "all" || cleanName(d.kam, true) === filters.kam) && 
         (filters.kae === "all" || cleanName(d.kae) === filters.kae)
     );
     const sMonth = dbSales.filter(d => 
         (filters.month === "all" || d.month === filters.month) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
         (filters.area === "all" || d.area === filters.area) && 
-        (filters.kam === "all" || cleanName(d.kam) === filters.kam) && 
+        (filters.kam === "all" || cleanName(d.kam, true) === filters.kam) && 
         (filters.kae === "all" || cleanName(d.kae) === filters.kae)
     );
     
