@@ -275,8 +275,12 @@ const aggregateDualData = (masterSubset, salesSubset) => {
     
     salesSubset.forEach(d => {
         let currentSales = Number(d.sales) || 0;
+        
+        // 1. TÍNH DOANH SỐ Ở NGOÀI: Cộng tất cả (cộng cả số âm trả hàng) để khớp 100% với Excel
+        sales += currentSales; 
+        
+        // 2. ĐẾM KHÁCH Ở TRONG: Chỉ đếm Khách Active, đếm SKU và Số lượng Bill cho các đơn mua hàng (số dương)
         if (currentSales > 0) {
-            sales += currentSales;
             skuLines += (Number(d.skuLines) || 0);
             invoiceCount++;
             if (d.cusCode) salesSet.add(d.cusCode);
