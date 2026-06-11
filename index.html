@@ -167,7 +167,6 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-
 <script src="data.js"></script>
 
 <script>
@@ -206,28 +205,21 @@ const dict = {
 
 const weekDates = { vi: { "all": "Báo cáo tổng hợp tất cả các tuần", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" }, en: { "all": "Summary report for all weeks", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" } };
 let lang = 'vi';
-let enrichedMaster = []; // Mảng dbMaster sau khi Auto-VLOOKUP
+let enrichedMaster = []; 
 let filters = { month: "all", week: "all", hq: "all", area: "all", kam: "all", kae: "all" };
 let charts = {};
 
 const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
-/* ==========================================================================
-   >>> ĐỘNG CƠ LIÊN KẾT DỮ LIỆU (SMART VLOOKUP & DIAGNOSTIC ENGINE) <<<
-   ========================================================================== */
 function cleanName(name) {
     if (!name) return "";
-    return String(name).toLowerCase()
-                       .replace(/✔️/g, "")
-                       .replace(/dsr/g, "")
-                       .replace(/kae/g, "")
-                       .trim();
+    return String(name).toLowerCase().replace(/✔️/g, "").replace(/dsr/g, "").replace(/kae/g, "").trim();
 }
 
 function prepareData() {
     if (typeof dbMaster === 'undefined' || typeof dbSales === 'undefined') {
-        alert("🚨 LỖI HỆ THỐNG: Không đọc được file data.js. Hãy kiểm tra xem file data.js có bị sai cú pháp (thiếu dấu phẩy, thiếu ngoặc kép, dấu ngoặc vuông) không nhé!");
+        alert("🚨 LỖI HỆ THỐNG: Không đọc được file data.js. Hãy kiểm tra xem file data.js có bị sai cú pháp không nhé!");
         return;
     }
 
@@ -248,27 +240,17 @@ function prepareData() {
         let mapInfo = kaeMap[safeKey];
         
         if (mapInfo) { 
-            enrichedMaster.push({
-                ...d, 
-                hq: mapInfo.hq,
-                area: mapInfo.area,
-                kam: mapInfo.kam
-            });
+            enrichedMaster.push({ ...d, hq: mapInfo.hq, area: mapInfo.area, kam: mapInfo.kam });
             mappedCount++;
         } else {
-            enrichedMaster.push({
-                ...d, 
-                hq: "⚠️ LỖI MAP",
-                area: "⚠️ LỖI MAP",
-                kam: "⚠️ CHƯA CÓ KAM"
-            });
+            enrichedMaster.push({ ...d, hq: "⚠️ LỖI MAP", area: "⚠️ LỖI MAP", kam: "⚠️ CHƯA CÓ KAM" });
         }
     });
 
     if (dbMaster.length === 0) {
-        alert("⚠️ CHẨN ĐOÁN: Mảng dbMaster đang trống rỗng (0 dòng). Bạn hãy kiểm tra lại file data.js xem đã dán data Kế hoạch vào chưa nhé!");
+        alert("⚠️ CHẨN ĐOÁN: Mảng dbMaster đang trống rỗng (0 dòng).");
     } else if (mappedCount === 0 && dbMaster.length > 0) {
-        alert("⚠️ CHẨN ĐOÁN: dbMaster có " + dbMaster.length + " dòng, nhưng trượt VLOOKUP 100%. Hãy kiểm tra các KAE đang bị nhãn '⚠️ CHƯA CÓ KAM' trên Dashboard. Có thể do tên KAE ở file data.js đang sai cấu trúc.");
+        alert("⚠️ CHẨN ĐOÁN: Trượt VLOOKUP 100%. Các KAE không khớp tên giữa 2 mảng.");
     }
 }
 
@@ -303,13 +285,9 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 
     let activeC = salesSet.size;
     let avgSku = invoiceCount > 0 ? (skuLines / invoiceCount) : 0;
-
     return { s: sales, tc: totalC, ac: activeC, avgSku: avgSku };
 };
 
-/* ==========================================================================
-   >>> ĐỘNG CƠ CO GIÃN SIDEBAR (UI RESIZER ENGINE) <<<
-   ========================================================================== */
 function initResizer() {
     const resizer = document.getElementById('dragMe');
     let isResizing = false;
@@ -326,7 +304,6 @@ function initResizer() {
 
 function init() {
     prepareData(); 
-    
     ['monthFilter', 'weekFilter', 'hqFilter', 'areaFilter'].forEach(id => {
         document.getElementById(id).addEventListener('change', e => { filters[id.replace('Filter','')] = e.target.value; renderFilters(); render(); });
     });
@@ -342,7 +319,6 @@ function renderFilters() {
     const monthOrder = { "jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6, "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12 };
     availableMonths.sort((a,b) => (monthOrder[a.toLowerCase()]||99) - (monthOrder[b.toLowerCase()]||99));
     if (filters.month !== "all" && !availableMonths.includes(filters.month)) filters.month = "all";
-    
     monthSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableMonths.forEach(m => { monthSel.innerHTML += `<option value="${m}" ${filters.month === m ? 'selected' : ''}>${m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()}</option>`; });
 
@@ -356,7 +332,6 @@ function renderFilters() {
     const dArea = enrichedMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq));
     const availableAreas = [...new Set(dArea.map(d => d.area))].filter(Boolean).sort();
     if (filters.area !== "all" && !availableAreas.includes(filters.area)) filters.area = "all";
-    
     areaSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableAreas.forEach(a => { areaSel.innerHTML += `<option value="${a}" ${filters.area === a ? 'selected' : ''}>${a}</option>`; });
 
@@ -374,7 +349,15 @@ function renderFilters() {
 }
 
 function getChartOptions() {
-    return { responsive:true, maintainAspectRatio:false, layout: { padding: { top: 30 } }, scales: { y: { beginAtZero: true, title: { display:true, text: t('axisCust'), font:{weight:'bold', size:12}, align:'end', padding: { bottom: 10 } }, ticks:{ stepSize: 1, font:{size:10} }, grid: { color: 'rgba(0,0,0,0.05)' } }, yS: { position:'right', grid:{drawOnChartArea:false}, beginAtZero: true, title: { display:true, text: t('axisVnd'), font:{weight:'bold', size:12}, align:'end', padding: { bottom: 10 } }, ticks:{ font:{size:10}, callback: (v) => fmt(v) } }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, font: { size: 11 } } } } };
+    return { 
+        responsive:true, maintainAspectRatio:false, layout: { padding: { top: 30 } }, 
+        scales: { 
+            y: { beginAtZero: true, title: { display:true, text: t('axisCust'), font:{weight:'bold', size:12}, align:'end', padding: { bottom: 10 } }, ticks:{ font:{size:10} }, grid: { color: 'rgba(0,0,0,0.05)' } }, 
+            yS: { position:'right', grid:{drawOnChartArea:false}, beginAtZero: true, title: { display:true, text: t('axisVnd'), font:{weight:'bold', size:12}, align:'end', padding: { bottom: 10 } }, ticks:{ font:{size:10}, callback: (v) => fmt(v) } }, 
+            x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } 
+        }, 
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, font: { size: 11 } } } } 
+    };
 }
 
 function drawChart(chartId, dataArray, labelKey) {
@@ -415,7 +398,6 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
 }
 
 function render() {
-    // SỬA LỖI TẠI ĐÂY: Sử dụng dbSales thay vì biến db cũ đã bị xóa bỏ
     if (typeof dbMaster === 'undefined' || typeof dbSales === 'undefined') return; 
     
     const isAllWeeks = filters.week === "all";
@@ -495,12 +477,14 @@ function render() {
     drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...aggregateDualData(mMonth, sMonth), route: "-" });
 }
 
+// HÀM SETLANG ĐÃ ĐƯỢC CHẮC CHẮN ĐẶT Ở ĐÂY ĐỂ TRÁNH LỖI!
 function setLang(newLang) {
     lang = newLang;
     document.getElementById('btn-vi').className = lang === 'vi' ? 'active' : '';
     document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
     document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t(el.getAttribute('data-i18n')); });
-    renderFilters(); render();
+    renderFilters(); 
+    render();
 }
 
 window.onload = init;
