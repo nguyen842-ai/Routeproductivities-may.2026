@@ -6,7 +6,8 @@
 const kamMap = {
    "TRẦN ĐÌNH PHÚC": "PHẠM CHIẾN THẮNG",
 "PHẠM MINH SANG": "PHAN HỒ THANH TRÚC",
-"ĐOÀN VĂN TUẤN": "Vacant KAM HCM",
+"ĐOÀN VĂN TUẤN": "VACANT KAM HCM",
+"Vacant KAM HCM": "VACANT KAM HCM",
 "PHAN VĂN SO": "HUỲNH VĂN GIÀU",
 
 };
