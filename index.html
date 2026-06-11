@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Route Productivity Dashboard - ULTIMATE MULTI-MONTH ENGINE</title>
+    <title>Route Productivity Dashboard - ULTIMATE SEGMENT & WEEK ENGINE</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -163,7 +163,7 @@
             <div class="kpi-grid">
                 <div class="kpi-card"><div class="label" data-i18n="kaeSales">TỔNG DOANH SỐ KAE</div><div class="value" id="kae-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kaeContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kae-val-contrib-area">0%</div><div class="sub" data-i18n="kamSalesSub">% Doanh số Area</div></div>
-                <div class="kpi-card"><div class="label" data-i18n="kaeContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kam-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kaeContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kae-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kaeBR">TỶ LỆ LÊN ĐƠN CỦA KHÁCH HÀNG</div><div class="value" id="kae-val-buying-rate">0%</div><div class="sub" data-i18n="kamBRSub">Tỷ lệ KH Active / Tổng tuyến</div></div>
             </div>
             <div style="height: 380px;"><canvas id="dayChart"></canvas></div>
@@ -239,7 +239,6 @@ let lang = 'vi';
 let filters = { month: "all", week: "all", hq: "all", area: "all", kam: "all", kae: "all" };
 let charts = {};
 
-// KHAI BÁO BIẾN TOÀN CỤC CHỨA DATA GỘP
 let dbMaster = [];
 let dbSales = [];
 
@@ -270,7 +269,6 @@ const aggregateDualData = (masterSubset, salesSubset) => {
     
     salesSubset.forEach(d => {
         let currentSales = Number(d.sales) || 0;
-        // KHỚP TỪNG ĐỒNG VỚI EXCEL: Đưa phép tính doanh số ra ngoài để cộng dồn cả số âm hàng trả lại
         sales += currentSales; 
         
         if (currentSales > 0) {
@@ -286,37 +284,49 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 };
 
 // =========================================================
-// 4. HÀM TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MATRIX CUSTOMER SEGMENT
+// 4. HÀM TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MATRIX CUSTOMER SEGMENT (FIXED)
 // =========================================================
 function renderSegmentTable(masterSubset, salesSubset) {
-    let salesMap = {};
-    salesSubset.forEach(d => {
-        if (!d.cusCode) return;
-        let s = Number(d.sales) || 0;
-        if (!salesMap[d.cusCode]) salesMap[d.cusCode] = { netSales: 0, isActive: false };
-        salesMap[d.cusCode].netSales += s; // Gồm cả doanh số âm
-        if (s > 0) salesMap[d.cusCode].isActive = true;
+    let cusSegmentMap = {};
+    masterSubset.forEach(d => {
+        if (d.cusCode) {
+            cusSegmentMap[d.cusCode] = d.CusS ? String(d.CusS).toUpperCase().trim() : "N";
+        }
     });
 
     let matrix = {};
+
     masterSubset.forEach(d => {
         let area = d.area || "Unknown Area";
-        let seg = d.CusS ? String(d.CusS).toUpperCase().trim() : "N";
+        let seg = cusSegmentMap[d.cusCode] || "N";
         let code = d.cusCode;
 
         if (!matrix[area]) matrix[area] = {};
         if (!matrix[area][seg]) {
             matrix[area][seg] = { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
         }
-
         if (code) {
             matrix[area][seg].planSet.add(code);
-            if (salesMap[code]) {
-                matrix[area][seg].salesSum += salesMap[code].netSales;
-                if (salesMap[code].isActive) {
-                    matrix[area][seg].activeSet.add(code);
-                }
-            }
+        }
+    });
+
+    salesSubset.forEach(d => {
+        let area = d.area || "Unknown Area";
+        let code = d.cusCode;
+        if (!code) return;
+
+        let seg = cusSegmentMap[code] || "N";
+
+        if (!matrix[area]) matrix[area] = {};
+        if (!matrix[area][seg]) {
+            matrix[area][seg] = { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
+        }
+
+        let currentSales = Number(d.sales) || 0;
+        matrix[area][seg].salesSum += currentSales;
+
+        if (currentSales > 0) {
+            matrix[area][seg].activeSet.add(code);
         }
     });
 
@@ -405,7 +415,7 @@ function setLang(newLang) {
 function updateF(type, val) { filters[type] = val; if (type === 'kam') filters.kae = "all"; renderFilters(); render(); }
 
 // =========================================================
-// 6. RENDER BỘ LỌC VÀ CÁC BIỂU ĐỒ CHART
+// 6. RENDER BỘ LỌC VÀ CÁC BIỂU ĐỒ CHART MAIN
 // =========================================================
 function renderFilters() {
     if (dbMaster.length === 0) return;
@@ -431,7 +441,7 @@ function renderFilters() {
     areaSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableAreas.forEach(a => { areaSel.innerHTML += `<option value="${a}" ${filters.area === a ? 'selected' : ''}>${a}</option>`; });
 
-    const fData = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || d.week === filters.week) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area));
+    const fData = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || (d.week || d.Week) === filters.week) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area));
     const kList = document.getElementById("kamList");
     const aKams = [...new Set(fData.map(d => d.kam))].sort();
     kList.innerHTML = `<div class="list-item ${filters.kam === 'all' ? 'selected' : ''}" onclick="updateF('kam', 'all')">${t('allKam')}</div>`;
@@ -503,25 +513,28 @@ function render() {
     const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
     if (subtitleEl) subtitleEl.innerText = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${filters.kam === "all" ? t('optAll') : filters.kam} | KAE: ${filters.kae === "all" ? t('optAll') : filters.kae}`;
 
-    const applyFilters = (d) => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || d.week === filters.week) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area);
+    const applyFilters = (d) => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || (d.week || d.Week) === filters.week) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area);
     
     const workMaster = dbMaster.filter(applyFilters);
     const workSales = dbSales.filter(applyFilters);
 
+    // 6.1 KPI CARD TRÊN CÙNG
     const sysKPI = aggregateDualData(workMaster, workSales);
     document.getElementById("val-sales").innerText = fmt(sysKPI.s);
     document.getElementById("val-cust").innerText = fmt(sysKPI.tc);
     document.getElementById("val-strike").innerText = fmt(sysKPI.ac);
     document.getElementById("val-strike-rate").innerText = (sysKPI.tc > 0 ? (sysKPI.ac/sysKPI.tc*100).toFixed(1) : 0) + "%";
 
+    // 6.2 KHỐI AREA PERFORMANCE
     const areas = [...new Set(workMaster.map(d=>d.area))].filter(Boolean).sort(); 
     const areaData = areas.map(a => ({ label: a, ...aggregateDualData(workMaster.filter(d => d.area === a), workSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
 
-    // KÍCH HOẠT BẢNG MATRIX PHÂN KHÚC KHÁCH HÀNG MỚI
+    // 6.3 KÍCH HOẠT MA TRẬN PHÂN KHÚC CUSTOMER SEGMENT
     renderSegmentTable(workMaster, workSales);
 
+    // 6.4 KHỐI LỌC KAM / KAE
     let cKam = filters.kam;
     if (cKam === "all" && filters.kae !== "all") { const fKam = dbMaster.find(d => d.kae === filters.kae); if (fKam) cKam = fKam.kam; }
     
@@ -549,41 +562,69 @@ function render() {
         });
     };
 
+    // KHỐI BIỂU ĐỒ KAM
     const kamDayData = getDayData(kamMaster, kamSalesData);
     const kamAgg = aggregateDualData(kamMaster, kamSalesData);
     drawChart('kamChart', kamDayData, 'd');
     drawTable('kamHeaderRow', 'kamTableBody', kamDayData, t('tblColKam'), 'd', false, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kamAgg, route: "-" }); 
 
+    // KHỐI BIỂU ĐỒ KAE
     const kaeDayData = getDayData(kaeMaster, kaeSalesData);
     const kaeAgg = aggregateDualData(kaeMaster, kaeSalesData);
     drawChart('dayChart', kaeDayData, 'd');
     drawTable('dayHeaderRow', 'dayTableBody', kaeDayData, t('tblColDay'), 'd', true, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kaeAgg, route: "-" }); 
 
     const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0);
-    const nationSalesTotal = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || d.week === filters.week)).reduce((a,b)=>a+(Number(b.sales)||0),0);
+    const nationSalesTotal = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || (d.week || d.Week) === filters.week)).reduce((a,b)=>a+(Number(b.sales)||0),0);
 
     document.getElementById("kam-val-sales").innerText = fmt(kamAgg.s); document.getElementById("kam-val-buying-rate").innerText = kamAgg.tc > 0 ? (kamAgg.ac / kamAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kam-val-contrib-area").innerText = areaSalesTotal > 0 ? (kamAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kam-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kamAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
 
-    const mMonth = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area) && (filters.kam === "all" || d.kam === filters.kam) && (filters.kae === "all" || d.kae === filters.kae));
-    const sMonth = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area) && (filters.kam === "all" || d.kam === filters.kam) && (filters.kae === "all" || d.kae === filters.kae));
-    const realWeeks = [...new Set(mMonth.map(d=>d.week))].sort();
+    // 🔥 6.5 KHỐI PERFORMANCE THEO TUẦN (BỌC THÉP CHỐNG LỖI CHỮ HOA/THƯỜNG THỰC CHIẾN) 🔥
+    const mMonth = dbMaster.filter(d => 
+        (filters.month === "all" || d.month === filters.month) && 
+        (filters.hq === "all" || d.hq === filters.hq) && 
+        (filters.area === "all" || d.area === filters.area) && 
+        (filters.kam === "all" || d.kam === filters.kam) && 
+        (filters.kae === "all" || d.kae === filters.kae)
+    );
+    const sMonth = dbSales.filter(d => 
+        (filters.month === "all" || d.month === filters.month) && 
+        (filters.hq === "all" || d.hq === filters.hq) && 
+        (filters.area === "all" || d.area === filters.area) && 
+        (filters.kam === "all" || d.kam === filters.kam) && 
+        (filters.kae === "all" || d.kae === filters.kae)
+    );
     
-    const weekData = realWeeks.map(w => ({ label: w, ...aggregateDualData(mMonth.filter(d => d.week === w), sMonth.filter(d => d.week === w)) }));
+    // Tự động quét và chấp nhận cả d.week hoặc d.Week từ Excel dán vào
+    const realWeeks = [...new Set(mMonth.map(d => d.week || d.Week))].filter(w => w && String(w).trim() !== "").sort();
+    
+    const weekData = realWeeks.map(w => ({ 
+        label: w, 
+        ...aggregateDualData(
+            mMonth.filter(d => (d.week || d.Week) === w), 
+            sMonth.filter(d => (d.week || d.Week) === w)
+        ) 
+    }));
+    
     drawChart('weekChart', weekData, 'label');
-    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...aggregateDualData(mMonth, sMonth), route: "-" });
+    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { 
+        label: lang === 'vi' ? "TỔNG" : "TOTAL", 
+        ...aggregateDualData(mMonth, sMonth), 
+        route: "-" 
+    });
 }
 
 // =========================================================
-// 7. KHỞI CHẠY HỆ THỐNG BAN ĐẦU & MERGE DỮ LIỆU ĐA THÁNG
+// 7. KHỞI CHẠY HỆ THỐNG BAN ĐẦU & SAFETY MERGE MULTI-MONTHS
 // =========================================================
 function init() {
-    // 7.1 CỖ MÁY SAFETY MERGE TỰ ĐỘNG GỘP DATA CÁC FILE THÁNG BÊN NGOÀI
     dbMaster = [];
     dbSales = [];
 
+    // Tự động kiểm tra file nào có trên Github thì gom lại, file chưa có tự bỏ qua ko báo lỗi sập trang
     if (typeof dbMasterM5 !== 'undefined') dbMaster = dbMaster.concat(dbMasterM5);
     if (typeof dbSalesM5 !== 'undefined')  dbSales  = dbSales.concat(dbSalesM5);
     
@@ -593,15 +634,12 @@ function init() {
     if (typeof dbMasterM7 !== 'undefined') dbMaster = dbMaster.concat(dbMasterM7);
     if (typeof dbSalesM7 !== 'undefined')  dbSales  = dbSales.concat(dbSalesM7);
 
-    // 7.2 Khởi tạo thanh trượt biên UI
     initResizer();
 
-    // 7.3 Gắn sự kiện lắng nghe bộ lọc
     ['monthFilter', 'weekFilter', 'hqFilter', 'areaFilter'].forEach(id => {
         document.getElementById(id).addEventListener('change', e => { filters[id.replace('Filter','')] = e.target.value; renderFilters(); render(); });
     });
 
-    // 7.4 Khởi tạo hiển thị mặc định Tiếng Việt
     setLang('vi'); 
 }
 
