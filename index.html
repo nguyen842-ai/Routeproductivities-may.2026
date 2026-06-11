@@ -209,7 +209,7 @@
 
 <script>
 // =========================================================
-// 2. TỪ ĐIỂN ĐA NGÔN NGỮ ĐỒNG BỘ ĐẦY ĐỦ
+// 2. TỪ ĐIỂN
 // =========================================================
 const dict = {
     vi: {
@@ -273,7 +273,7 @@ const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
 // =========================================================
-// CÁC CỖ MÁY CHUẨN HÓA VÀ TỐI ƯU TỐC ĐỘ O(N)
+// CHUẨN HÓA VÀ TỐI ƯU TỐC ĐỘ O(N)
 // =========================================================
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 
@@ -351,7 +351,7 @@ function renderSegmentTable(masterSubset, salesSubset) {
         }
     });
 
-    // 🔥 TẠO 5 THẺ KPI CÓ MÀU SẮC 🔥
+   // 🔥 TẠO 5 THẺ KPI CÓ MÀU SẮC 🔥
     let globalSegCount = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'N': 0 };
     uniqueMasterCus.forEach(code => {
         let seg = cusSegmentMap[code] || 'N';
@@ -367,13 +367,20 @@ function renderSegmentTable(masterSubset, salesSubset) {
         let count = globalSegCount[seg];
         let pct = totalCus > 0 ? ((count / totalCus) * 100).toFixed(1) + '%' : '0%';
         let color = segColors[seg];
+        
+        // 🟢 BỘ LỌC ĐỔI TÊN THÔNG MINH: Nếu là N thì in chữ IS CLASSIFYING
+        let displayTitle = (seg === 'N') ? "IS CLASSIFYING" : `CLASS ${seg}`;
+
         kpiHtml += `
             <div class="kpi-card" style="padding: 12px; border-bottom: 4px solid ${color};">
-                <div class="label" style="color: ${color}; font-weight: 800;">CLASS ${seg}</div>
+                <div class="label" style="color: ${color}; font-weight: 800;">${displayTitle}</div>
                 <div class="value" style="color: var(--b7); font-size: 18px;">${fmt(count)}</div>
                 <div class="sub" style="color: #64748b; font-size: 11px; margin-top: 4px;">Tỷ trọng: <b style="color: ${color};">${pct}</b></div>
             </div>
         `;
+    });
+    const kpiContainer = document.getElementById('segmentKpiContainer');
+    if (kpiContainer) kpiContainer.innerHTML = kpiHtml;
     });
     const kpiContainer = document.getElementById('segmentKpiContainer');
     if (kpiContainer) kpiContainer.innerHTML = kpiHtml;
