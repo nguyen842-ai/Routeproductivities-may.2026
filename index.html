@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Route Productivity Dashboard - ULTIMATE SEGMENT & WEEK ENGINE</title>
+    <title>Route Productivity Dashboard - ULTIMATE EDITION</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -19,7 +19,6 @@
             position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
         }
         
-        /* THANH KÉO RĂNH BIÊN (RESIZER) */
         .resizer {
             width: 6px; background: var(--b2); cursor: col-resize; 
             position: sticky; top: 0; height: 100vh; z-index: 10; transition: background 0.2s;
@@ -249,17 +248,16 @@ const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 const cleanName = (name) => String(name || "").replace(/[✔️❌]/g, '').trim();
 
-// 💡 MÁY QUÉT TRẠNG THÁI: Tìm dòng data mới nhất của nhân viên để bốc lại cái dấu ✔️/❌
+// Máy quét trạng thái đã Nâng Cấp: Quét lùi tìm dấu, tha bổng cho người đã nghỉ
 const getDisplayStatus = (cleanStr, subset, key) => {
     for (let i = subset.length - 1; i >= 0; i--) {
         if (cleanName(subset[i][key]) === cleanStr) {
             let raw = String(subset[i][key]).trim();
             let match = raw.match(/^[✔️❌]/); 
             if (match) return match[0] + ' ' + cleanStr; 
-            return cleanStr; 
         }
     }
-    return cleanStr;
+    return cleanStr; 
 };
 
 
@@ -376,7 +374,6 @@ function renderSegmentTable(masterSubset, salesSubset) {
 
     sortedAreas.forEach(area => {
         let isFirst = true;
-        
         let areaPlanCount = 0;
         let areaActCount = 0;
         let areaSalesSum = 0;
@@ -455,7 +452,22 @@ function setLang(newLang) {
     render();
 }
 
-function updateF(type, val) { filters[type] = val; if (type === 'kam') filters.kae = "all"; renderFilters(); render(); }
+// 🔥 TÌM GIẬT LÙI: Bấm KAE tự động bốc ông KAM dán lên bộ lọc
+function updateF(type, val) { 
+    filters[type] = val; 
+    
+    if (type === 'kam') {
+        filters.kae = "all"; 
+    } else if (type === 'kae' && val !== 'all') {
+        const fKam = dbMaster.find(d => cleanName(d.kae) === val) || dbSales.find(d => cleanName(d.kae) === val);
+        if (fKam && fKam.kam) {
+            filters.kam = cleanName(fKam.kam);
+        }
+    }
+    
+    renderFilters(); 
+    render(); 
+}
 
 // =========================================================
 // 6. RENDER BỘ LỌC VÀ CÁC BIỂU ĐỒ CHART MAIN
@@ -485,7 +497,6 @@ function renderFilters() {
     areaSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableAreas.forEach(a => { areaSel.innerHTML += `<option value="${a}" ${filters.area === a ? 'selected' : ''}>${a}</option>`; });
 
-    // 🚨 BỘ QUÉT TÌM KIẾM "TỘI PHẠM" BÁN TRÁI TUYẾN 🚨
     const applyF = d => (filters.month === "all" || d.month === filters.month) && 
                         (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && 
                         (filters.hq === "all" || d.hq === filters.hq) && 
@@ -502,15 +513,22 @@ function renderFilters() {
     
     let kamStatusMap = {};
     allKams.forEach(k => {
-        if (!masterKams.includes(k)) kamStatusMap[k] = "🚨 " + k + " (No Plan)"; // Túm cổ KAM ko làm kế hoạch
-        else kamStatusMap[k] = getDisplayStatus(k, fMaster, 'kam');
+        let globalStatus = getDisplayStatus(k, [...dbMaster, ...dbSales], 'kam');
+        // Miễn tử kim bài: Quét toàn kho, có án ❌ thì tha ko thổi còi 🚨
+        if (globalStatus.startsWith('❌')) {
+            kamStatusMap[k] = globalStatus;
+        } else if (!masterKams.includes(k)) {
+            kamStatusMap[k] = "🚨 " + k + " (No Plan)";
+        } else {
+            kamStatusMap[k] = getDisplayStatus(k, fMaster, 'kam');
+        }
     });
     
     allKams.sort((a, b) => {
         let stA = kamStatusMap[a] || ""; let stB = kamStatusMap[b] || "";
-        if (stA.includes('🚨') && !stB.includes('🚨')) return -1; // 🚨 Ép lên đỉnh
+        if (stA.includes('🚨') && !stB.includes('🚨')) return -1; 
         if (!stA.includes('🚨') && stB.includes('🚨')) return 1;
-        if (stA.includes('❌') && !stB.includes('❌')) return 1;  // ❌ Ép xuống đáy
+        if (stA.includes('❌') && !stB.includes('❌')) return 1;  
         if (!stA.includes('❌') && stB.includes('❌')) return -1;
         return a.localeCompare(b);
     });
@@ -531,15 +549,21 @@ function renderFilters() {
 
     let kaeStatusMap = {};
     allKaes.forEach(n => {
-        if (!masterKaes.includes(n)) kaeStatusMap[n] = "🚨 " + n + " (No Plan)"; // Túm cổ KAE bán mồ côi
-        else kaeStatusMap[n] = getDisplayStatus(n, mKaeData, 'kae');
+        let globalStatus = getDisplayStatus(n, [...dbMaster, ...dbSales], 'kae');
+        if (globalStatus.startsWith('❌')) {
+            kaeStatusMap[n] = globalStatus;
+        } else if (!masterKaes.includes(n)) {
+            kaeStatusMap[n] = "🚨 " + n + " (No Plan)";
+        } else {
+            kaeStatusMap[n] = getDisplayStatus(n, mKaeData, 'kae');
+        }
     });
 
     allKaes.sort((a, b) => {
         let stA = kaeStatusMap[a] || ""; let stB = kaeStatusMap[b] || "";
-        if (stA.includes('🚨') && !stB.includes('🚨')) return -1; // 🚨 Ép lên đỉnh
+        if (stA.includes('🚨') && !stB.includes('🚨')) return -1;
         if (!stA.includes('🚨') && stB.includes('🚨')) return 1;
-        if (stA.includes('❌') && !stB.includes('❌')) return 1;  // ❌ Ép xuống đáy
+        if (stA.includes('❌') && !stB.includes('❌')) return 1; 
         if (!stA.includes('❌') && stB.includes('❌')) return -1;
         return a.localeCompare(b);
     });
@@ -606,7 +630,6 @@ function render() {
     const selectedWeekText = isAllWeeks ? weekDates[lang]["all"] : (weekDates[lang][filters.week] || "");
     document.querySelectorAll('.chart-subtitle:not([data-i18n="cWeekSubtitle"])').forEach(el => { el.innerText = selectedWeekText; });
 
-    // Áp dụng bộ lọc chính bằng Tên Đã Giặt
     const applyFilters = (d) => 
         (filters.month === "all" || d.month === filters.month) && 
         (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && 
@@ -618,35 +641,33 @@ function render() {
     const workMaster = dbMaster.filter(applyFilters);
     const workSales = dbSales.filter(applyFilters);
 
-    // Xử lý tiêu đề phụ (Subtitle) cũng gắn luôn dấu ✔️/❌ cho ngầu
     const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
     if (subtitleEl) {
         let displayKamSub = filters.kam === "all" ? t('optAll') : getDisplayStatus(filters.kam, workMaster, 'kam');
         let displayKaeSub = filters.kae === "all" ? t('optAll') : getDisplayStatus(filters.kae, workMaster, 'kae');
-        // Xử lý khi chọn trúng người No Plan
-        if(filters.kam !== "all" && displayKamSub === filters.kam) displayKamSub = "🚨 " + filters.kam;
-        if(filters.kae !== "all" && displayKaeSub === filters.kae) displayKaeSub = "🚨 " + filters.kae;
+        
+        let globalKam = getDisplayStatus(filters.kam, [...dbMaster, ...dbSales], 'kam');
+        let globalKae = getDisplayStatus(filters.kae, [...dbMaster, ...dbSales], 'kae');
+
+        if(filters.kam !== "all") displayKamSub = globalKam.startsWith('❌') ? globalKam : (displayKamSub === filters.kam && !workMaster.some(d => cleanName(d.kam)===filters.kam) ? "🚨 " + filters.kam : displayKamSub);
+        if(filters.kae !== "all") displayKaeSub = globalKae.startsWith('❌') ? globalKae : (displayKaeSub === filters.kae && !workMaster.some(d => cleanName(d.kae)===filters.kae) ? "🚨 " + filters.kae : displayKaeSub);
 
         subtitleEl.innerText = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${displayKamSub} | KAE: ${displayKaeSub}`;
     }
 
-    // 6.1 KPI CARD TRÊN CÙNG
     const sysKPI = aggregateDualData(workMaster, workSales);
     document.getElementById("val-sales").innerText = fmt(sysKPI.s);
     document.getElementById("val-cust").innerText = fmt(sysKPI.tc);
     document.getElementById("val-strike").innerText = fmt(sysKPI.ac);
     document.getElementById("val-strike-rate").innerText = (sysKPI.tc > 0 ? (sysKPI.ac/sysKPI.tc*100).toFixed(1) : 0) + "%";
 
-    // 6.2 KHỐI AREA PERFORMANCE
     const areas = [...new Set([...workMaster.map(d=>d.area), ...workSales.map(d=>d.area)])].filter(Boolean).sort(); 
     const areaData = areas.map(a => ({ label: a, ...aggregateDualData(workMaster.filter(d => d.area === a), workSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
 
-    // 6.3 KÍCH HOẠT MA TRẬN PHÂN KHÚC CUSTOMER SEGMENT
     renderSegmentTable(workMaster, workSales);
 
-    // 6.4 KHỐI LỌC KAM / KAE
     let cKam = filters.kam;
     if (cKam === "all" && filters.kae !== "all") { 
         const fKam = dbMaster.find(d => cleanName(d.kae) === filters.kae) || dbSales.find(d => cleanName(d.kae) === filters.kae); 
@@ -695,7 +716,6 @@ function render() {
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
 
-    // 🔥 6.5 KHỐI PERFORMANCE THEO TUẦN (Bọc thép 2 lớp) 🔥
     const mMonth = dbMaster.filter(d => 
         (filters.month === "all" || d.month === filters.month) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
@@ -711,15 +731,11 @@ function render() {
         (filters.kae === "all" || cleanName(d.kae) === filters.kae)
     );
     
-    // Gộp tất cả các tuần xuất hiện trong Sổ Tuyến LẪN Sổ Bán Hàng (Đề phòng khách No Plan mua vào tuần ko ai có Plan)
     const realWeeks = [...new Set([...mMonth.map(d => getW(d)), ...sMonth.map(d => getW(d))])].filter(w => w !== "").sort();
     
     const weekData = realWeeks.map(w => ({ 
         label: w, 
-        ...aggregateDualData(
-            mMonth.filter(d => getW(d) === w), 
-            sMonth.filter(d => getW(d) === w)
-        ) 
+        ...aggregateDualData(mMonth.filter(d => getW(d) === w), sMonth.filter(d => getW(d) === w)) 
     }));
     
     drawChart('weekChart', weekData, 'label');
