@@ -461,10 +461,10 @@ function updateF(type, val) { filters[type] = val; if (type === 'kam') filters.k
 // 6. RENDER BỘ LỌC VÀ CÁC BIỂU ĐỒ CHART MAIN
 // =========================================================
 function renderFilters() {
-    if (dbMaster.length === 0) return;
+    if (dbMaster.length === 0 && dbSales.length === 0) return;
 
     const monthSel = document.getElementById("monthFilter");
-    let availableMonths = [...new Set(dbMaster.map(d => d.month))].filter(Boolean);
+    let availableMonths = [...new Set([...dbMaster.map(d => d.month), ...dbSales.map(d=>d.month)])].filter(Boolean);
     const monthOrder = { "jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6, "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12 };
     availableMonths.sort((a,b) => (monthOrder[a.toLowerCase()]||99) - (monthOrder[b.toLowerCase()]||99));
     if (filters.month !== "all" && !availableMonths.includes(filters.month)) filters.month = "all";
@@ -472,57 +472,80 @@ function renderFilters() {
     availableMonths.forEach(m => { monthSel.innerHTML += `<option value="${m}" ${filters.month === m ? 'selected' : ''}>${m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()}</option>`; });
 
     const hqSel = document.getElementById("hqFilter");
-    const availableHqs = [...new Set(dbMaster.map(d => d.hq))].filter(Boolean).sort();
+    const availableHqs = [...new Set([...dbMaster.map(d => d.hq), ...dbSales.map(d=>d.hq)])].filter(Boolean).sort();
     if (filters.hq !== "all" && !availableHqs.includes(filters.hq)) filters.hq = "all";
     hqSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableHqs.forEach(h => { hqSel.innerHTML += `<option value="${h}" ${filters.hq === h ? 'selected' : ''}>${h}</option>`; });
 
     const areaSel = document.getElementById("areaFilter");
-    const dArea = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq));
-    const availableAreas = [...new Set(dArea.map(d => d.area))].filter(Boolean).sort();
+    const dAreaMaster = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq));
+    const dAreaSales = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq));
+    const availableAreas = [...new Set([...dAreaMaster.map(d => d.area), ...dAreaSales.map(d=>d.area)])].filter(Boolean).sort();
     if (filters.area !== "all" && !availableAreas.includes(filters.area)) filters.area = "all";
     areaSel.innerHTML = `<option value="all" data-i18n="optAll">${t('optAll')}</option>`;
     availableAreas.forEach(a => { areaSel.innerHTML += `<option value="${a}" ${filters.area === a ? 'selected' : ''}>${a}</option>`; });
 
-    // Lọc data theo tháng/khu vực trước khi tạo list KAM/KAE
-    const fData = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area));
+    // 🚨 BỘ QUÉT TÌM KIẾM "TỘI PHẠM" BÁN TRÁI TUYẾN 🚨
+    const applyF = d => (filters.month === "all" || d.month === filters.month) && 
+                        (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && 
+                        (filters.hq === "all" || d.hq === filters.hq) && 
+                        (filters.area === "all" || d.area === filters.area);
     
-    // ĐỔ DANH SÁCH KAM & ÉP NGƯỜI NGHỈ (❌) XUỐNG ĐÁY DANH SÁCH
+    const fMaster = dbMaster.filter(applyF);
+    const fSales = dbSales.filter(applyF);
+    
+    // --- ĐỔ DANH SÁCH KAM ---
     const kList = document.getElementById("kamList");
-    let aKams = [...new Set(fData.map(d => cleanName(d.kam)))].filter(Boolean);
-    let kamStatusMap = {};
-    aKams.forEach(k => kamStatusMap[k] = getDisplayStatus(k, fData, 'kam'));
+    let masterKams = [...new Set(fMaster.map(d => cleanName(d.kam)))].filter(Boolean);
+    let salesKams = [...new Set(fSales.map(d => cleanName(d.kam)))].filter(Boolean);
+    let allKams = [...new Set([...masterKams, ...salesKams])];
     
-    aKams.sort((a, b) => {
-        let isInactiveA = kamStatusMap[a].startsWith('❌');
-        let isInactiveB = kamStatusMap[b].startsWith('❌');
-        if (isInactiveA && !isInactiveB) return 1;
-        if (!isInactiveA && isInactiveB) return -1;
+    let kamStatusMap = {};
+    allKams.forEach(k => {
+        if (!masterKams.includes(k)) kamStatusMap[k] = "🚨 " + k + " (No Plan)"; // Túm cổ KAM ko làm kế hoạch
+        else kamStatusMap[k] = getDisplayStatus(k, fMaster, 'kam');
+    });
+    
+    allKams.sort((a, b) => {
+        let stA = kamStatusMap[a] || ""; let stB = kamStatusMap[b] || "";
+        if (stA.includes('🚨') && !stB.includes('🚨')) return -1; // 🚨 Ép lên đỉnh
+        if (!stA.includes('🚨') && stB.includes('🚨')) return 1;
+        if (stA.includes('❌') && !stB.includes('❌')) return 1;  // ❌ Ép xuống đáy
+        if (!stA.includes('❌') && stB.includes('❌')) return -1;
         return a.localeCompare(b);
     });
 
     kList.innerHTML = `<div class="list-item ${filters.kam === 'all' ? 'selected' : ''}" onclick="updateF('kam', 'all')">${t('allKam')}</div>`;
-    aKams.forEach(k => { 
+    allKams.forEach(k => { 
         kList.innerHTML += `<div class="list-item ${filters.kam === k ? 'selected' : ''}" onclick="updateF('kam', '${k}')">${kamStatusMap[k]}</div>`; 
     });
     
-    // ĐỔ DANH SÁCH KAE & ÉP NGƯỜI NGHỈ (❌) XUỐNG ĐÁY DANH SÁCH
+    // --- ĐỔ DANH SÁCH KAE ---
     const kaeList = document.getElementById("kaeList");
-    const dKae = filters.kam === "all" ? fData : fData.filter(d => cleanName(d.kam) === filters.kam);
-    let aKaes = [...new Set(dKae.map(d => cleanName(d.kae)))].filter(Boolean);
-    let kaeStatusMap = {};
-    aKaes.forEach(k => kaeStatusMap[k] = getDisplayStatus(k, dKae, 'kae'));
+    const mKaeData = filters.kam === "all" ? fMaster : fMaster.filter(d => cleanName(d.kam) === filters.kam);
+    const sKaeData = filters.kam === "all" ? fSales : fSales.filter(d => cleanName(d.kam) === filters.kam);
 
-    aKaes.sort((a, b) => {
-        let isInactiveA = kaeStatusMap[a].startsWith('❌');
-        let isInactiveB = kaeStatusMap[b].startsWith('❌');
-        if (isInactiveA && !isInactiveB) return 1;
-        if (!isInactiveA && isInactiveB) return -1;
+    let masterKaes = [...new Set(mKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
+    let salesKaes = [...new Set(sKaeData.map(d => cleanName(d.kae)))].filter(Boolean);
+    let allKaes = [...new Set([...masterKaes, ...salesKaes])];
+
+    let kaeStatusMap = {};
+    allKaes.forEach(n => {
+        if (!masterKaes.includes(n)) kaeStatusMap[n] = "🚨 " + n + " (No Plan)"; // Túm cổ KAE bán mồ côi
+        else kaeStatusMap[n] = getDisplayStatus(n, mKaeData, 'kae');
+    });
+
+    allKaes.sort((a, b) => {
+        let stA = kaeStatusMap[a] || ""; let stB = kaeStatusMap[b] || "";
+        if (stA.includes('🚨') && !stB.includes('🚨')) return -1; // 🚨 Ép lên đỉnh
+        if (!stA.includes('🚨') && stB.includes('🚨')) return 1;
+        if (stA.includes('❌') && !stB.includes('❌')) return 1;  // ❌ Ép xuống đáy
+        if (!stA.includes('❌') && stB.includes('❌')) return -1;
         return a.localeCompare(b);
     });
 
     kaeList.innerHTML = `<div class="list-item ${filters.kae === 'all' ? 'selected' : ''}" onclick="updateF('kae', 'all')">${t('allKae')}</div>`;
-    aKaes.forEach(n => { 
+    allKaes.forEach(n => { 
         kaeList.innerHTML += `<div class="list-item ${filters.kae === n ? 'selected' : ''}" onclick="updateF('kae', '${n}')">${kaeStatusMap[n]}</div>`; 
     });
 }
@@ -577,7 +600,7 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
 }
 
 function render() {
-    if (dbMaster.length === 0 || dbSales.length === 0) return; 
+    if (dbMaster.length === 0 && dbSales.length === 0) return; 
     
     const isAllWeeks = filters.week === "all";
     const selectedWeekText = isAllWeeks ? weekDates[lang]["all"] : (weekDates[lang][filters.week] || "");
@@ -600,6 +623,10 @@ function render() {
     if (subtitleEl) {
         let displayKamSub = filters.kam === "all" ? t('optAll') : getDisplayStatus(filters.kam, workMaster, 'kam');
         let displayKaeSub = filters.kae === "all" ? t('optAll') : getDisplayStatus(filters.kae, workMaster, 'kae');
+        // Xử lý khi chọn trúng người No Plan
+        if(filters.kam !== "all" && displayKamSub === filters.kam) displayKamSub = "🚨 " + filters.kam;
+        if(filters.kae !== "all" && displayKaeSub === filters.kae) displayKaeSub = "🚨 " + filters.kae;
+
         subtitleEl.innerText = `${t('fMonth')}: ${filters.month === "all" ? t('optAll') : filters.month.toUpperCase()} | ${t('fRegion')}: ${filters.hq === "all" ? t('optAll') : filters.hq} | ${t('fArea')}: ${filters.area === "all" ? t('optAll') : filters.area} | KAM: ${displayKamSub} | KAE: ${displayKaeSub}`;
     }
 
@@ -611,7 +638,7 @@ function render() {
     document.getElementById("val-strike-rate").innerText = (sysKPI.tc > 0 ? (sysKPI.ac/sysKPI.tc*100).toFixed(1) : 0) + "%";
 
     // 6.2 KHỐI AREA PERFORMANCE
-    const areas = [...new Set(workMaster.map(d=>d.area))].filter(Boolean).sort(); 
+    const areas = [...new Set([...workMaster.map(d=>d.area), ...workSales.map(d=>d.area)])].filter(Boolean).sort(); 
     const areaData = areas.map(a => ({ label: a, ...aggregateDualData(workMaster.filter(d => d.area === a), workSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
@@ -622,7 +649,7 @@ function render() {
     // 6.4 KHỐI LỌC KAM / KAE
     let cKam = filters.kam;
     if (cKam === "all" && filters.kae !== "all") { 
-        const fKam = dbMaster.find(d => cleanName(d.kae) === filters.kae); 
+        const fKam = dbMaster.find(d => cleanName(d.kae) === filters.kae) || dbSales.find(d => cleanName(d.kae) === filters.kae); 
         if (fKam) cKam = cleanName(fKam.kam); 
     }
     
@@ -668,7 +695,7 @@ function render() {
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
 
-    // 🔥 6.5 KHỐI PERFORMANCE THEO TUẦN 🔥
+    // 🔥 6.5 KHỐI PERFORMANCE THEO TUẦN (Bọc thép 2 lớp) 🔥
     const mMonth = dbMaster.filter(d => 
         (filters.month === "all" || d.month === filters.month) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
@@ -684,7 +711,8 @@ function render() {
         (filters.kae === "all" || cleanName(d.kae) === filters.kae)
     );
     
-    const realWeeks = [...new Set(mMonth.map(d => getW(d)))].filter(w => w !== "").sort();
+    // Gộp tất cả các tuần xuất hiện trong Sổ Tuyến LẪN Sổ Bán Hàng (Đề phòng khách No Plan mua vào tuần ko ai có Plan)
+    const realWeeks = [...new Set([...mMonth.map(d => getW(d)), ...sMonth.map(d => getW(d))])].filter(w => w !== "").sort();
     
     const weekData = realWeeks.map(w => ({ 
         label: w, 
