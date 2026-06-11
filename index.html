@@ -1,7 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Route Productivity Dashboard - PRO DUAL ENGINE</title>
+    <style>
+        /* =========================================================
+           1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
+           ========================================================= */
+        :root {
+            --b1:#E6F1FB; --b2:#B5D4F4; --b3:#85B7EB; --b4:#378ADD; --b5:#185FA5; --b6:#0C447C; --b7:#042C53;
+            --sidebar-width: 440px; /* Độ rộng mặc định có thể kéo giãn */
+        }
+        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f4f8; color: var(--b7); font-size: 13px; }
+        .db-container { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: var(--sidebar-width); flex-shrink: 0; background: white; padding: 20px; 
+            position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
+        }
+        
+        /* THANH KÉO RĂNH BIÊN (RESIZER) */
+        .resizer {
+            width: 6px; background: var(--b2); cursor: col-resize; 
+            position: sticky; top: 0; height: 100vh; z-index: 10; transition: background 0.2s;
+        }
+        .resizer:hover, .resizer.resizing { background: var(--b5); }
+
+        .header-wrap { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--b4); padding-bottom: 8px; margin-bottom: 5px; }
+        .sidebar-header { font-size: 14px; font-weight: 800; color: var(--b6); text-transform: uppercase; }
+        
+        .lang-toggle { display: flex; gap: 4px; }
+        .lang-toggle button { 
+            border: 1px solid var(--b4); background: white; color: var(--b5); padding: 2px 6px; 
+            font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s;
+        }
+        .lang-toggle button.active { background: var(--b4); color: white; }
+
+        .top-filters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .filter-item label { display: block; font-size: 10px; font-weight: 700; color: var(--b5); margin-bottom: 4px; text-transform: uppercase; }
+        .filter-item select { width: 100%; padding: 7px; border: 1px solid var(--b3); border-radius: 5px; font-size: 12px; cursor: pointer; }
+
+        .personnel-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-grow: 1; overflow: hidden; margin-top: 5px; }
+        .list-container { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--b2); border-radius: 6px; overflow: hidden; }
+        .list-label { font-size: 11px; font-weight: 700; color: white; background: var(--b5); padding: 10px; text-align: center; }
+        .scroll-list { overflow-y: auto; flex-grow: 1; background: #fff; }
+        .list-item { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 11px; transition: 0.2s; }
+        .list-item:hover { background: var(--b1); }
+        .list-item.selected { background: var(--b4); color: white; font-weight: 600; }
+
+        .main-content { flex: 1; min-width: 0; padding: 25px; overflow-y: auto; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { background: white; border-radius: 10px; padding: 18px; border: 1px solid var(--b2); text-align: center; }
+        .kpi-card .label { font-size: 11px; color: var(--b5); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+        .kpi-card .value { font-size: 20px; font-weight: 800; color: var(--b7); }
+        .kpi-card .sub { font-size: 11px; color: var(--b3); margin-top: 6px; font-weight: 600; text-transform: none; }
+
+        .chart-box { background: white; border: 1px solid var(--b2); border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .chart-title { font-size: 14px; font-weight: 700; color: var(--b6); margin-bottom: 6px; display: flex; align-items: center; text-transform: uppercase; }
+        .chart-title::before { content: ""; display: inline-block; width: 4px; height: 18px; background: var(--b4); margin-right: 10px; }
+        .chart-subtitle { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 25px; padding-left: 14px; text-transform: uppercase; font-style: italic; }
+        
+        .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--b2); margin-top: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; min-width: 700px; }
+        .data-table th { background: var(--b5); color: white; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .data-table td { padding: 10px 12px; border: 1px solid #f1f5f9; text-align: center; line-height: 1.4; }
+        .label-cell { background: var(--b1); color: var(--b6); font-weight: 800; text-align: left !important; width: 160px; position: sticky; left: 0; z-index: 2; }
+        .no-select { user-select: none; }
+    </style>
+</head>
+<body>
+
+<div class="db-container">
+    <div class="sidebar">
+        <div class="header-wrap">
+            <div class="sidebar-header" data-i18n="sysTitle">WEEKLY ROUTE PRODUCTIVITIES REPORT</div>
+            <div class="lang-toggle">
+                <button id="btn-vi" onclick="setLang('vi')" class="active">VI</button>
+                <button id="btn-en" onclick="setLang('en')">EN</button>
+            </div>
+        </div>
+        
+        <div class="top-filters">
+            <div class="filter-item">
+                <label data-i18n="fMonth">Tháng</label>
+                <select id="monthFilter"><option value="all" data-i18n="optAll">Tất cả</option></select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="fWeek">Tuần</label>
+                <select id="weekFilter">
+                    <option value="all" data-i18n="optAll">Tất cả</option>
+                    <option value="W0">W0</option><option value="W1">W1</option><option value="W2">W2</option><option value="W3">W3</option><option value="W4">W4</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="fRegion">Miền</label>
+                <select id="hqFilter"><option value="all" data-i18n="optAll">Tất cả</option><option value="1.South">1.South</option><option value="2.North">2.North</option></select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="fArea">Khu vực</label>
+                <select id="areaFilter"><option value="all" data-i18n="optAll">Tất cả</option></select>
+            </div>
+        </div>
+
+        <div class="personnel-filters">
+            <div class="list-container">
+                <div class="list-label">KAM</div>
+                <div class="scroll-list" id="kamList"></div>
+            </div>
+            <div class="list-container">
+                <div class="list-label">KAE / DSR</div>
+                <div class="scroll-list" id="kaeList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="resizer" id="dragMe"></div>
+
+    <main class="main-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="label" data-i18n="kpiSales">DOANH SỐ</div><div class="value" id="val-sales">0</div><div class="sub" data-i18n="kpiSalesSub">VNĐ (Chưa VAT)</div></div>
+            <div class="kpi-card"><div class="label" data-i18n="kpiTotal">TỔNG KH TRÊN TUYẾN</div><div class="value" id="val-cust">0</div><div class="sub" data-i18n="kpiTotalSub">khách hàng</div></div>
+            <div class="kpi-card"><div class="label" data-i18n="kpiActive">KH ACTIVE</div><div class="value" id="val-strike">0</div><div class="sub" data-i18n="kpiActiveSub">khách hàng</div></div>
+            <div class="kpi-card"><div class="label" data-i18n="kpiStrike">STRIKE RATE</div><div class="value" id="val-strike-rate">0%</div><div class="sub" data-i18n="kpiStrikeSub">Tỷ lệ KH Active / Tổng</div></div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-title" data-i18n="cAreaTitle">HIỆU SUẤT THEO KHU VỰC (AREA)</div>
+            <div class="chart-subtitle"></div>
+            <div style="height: 400px;"><canvas id="areaChart"></canvas></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr id="areaHeaderRow"></tr></thead><tbody id="areaTableBody"></tbody></table></div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-title" data-i18n="cKamTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAM</div>
+            <div class="chart-subtitle"></div>
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="label" data-i18n="kamSales">TỔNG DOANH SỐ KAM</div><div class="value" id="kam-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kamContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kam-val-contrib-area">0%</div><div class="sub" data-i18n="kamContribAreaSub">% Doanh số Area</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kamContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kam-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kamBR">BUYING RATE BY KAM</div><div class="value" id="kam-val-buying-rate">0%</div><div class="sub" data-i18n="kamBRSub">Tỷ lệ KH Active / Tổng tuyến</div></div>
+            </div>
+            <div style="height: 400px;"><canvas id="kamChart"></canvas></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr id="kamHeaderRow"></tr></thead><tbody id="kamTableBody"></tbody></table></div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-title" data-i18n="cDayTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAE</div>
+            <div class="chart-subtitle"></div>
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="label" data-i18n="kaeSales">TỔNG DOANH SỐ KAE</div><div class="value" id="kae-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kaeContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kae-val-contrib-area">0%</div><div class="sub" data-i18n="kamContribAreaSub">% Doanh số Area</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kaeContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kae-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kaeBR">TỶ LỆ LÊN ĐƠN CỦA KHÁCH HÀNG</div><div class="value" id="kae-val-buying-rate">0%</div><div class="sub" data-i18n="kamBRSub">Tỷ lệ KH Active / Tổng tuyến</div></div>
+            </div>
+            <div style="height: 400px;"><canvas id="dayChart"></canvas></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr id="dayHeaderRow"></tr></thead><tbody id="dayTableBody"></tbody></table></div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-title" data-i18n="cWeekTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG THEO TUẦN</div>
+            <div class="chart-subtitle" data-i18n="cWeekSubtitle">TỔNG HỢP DỮ LIỆU CÁC TUẦN</div>
+            <div style="height: 400px;"><canvas id="weekChart"></canvas></div>
+            <div class="table-wrap"><table class="data-table"><thead><tr id="weekHeaderRow"></tr></thead><tbody id="weekTableBody"></tbody></table></div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
 <script src="data.js"></script>
 
 <script>
-// ... (Giữ nguyên biến dict đa ngôn ngữ và weekDates ở đây) ...
 const dict = {
     vi: {
         sysTitle: "HIỆU SUẤT TUYẾN BÁN HÀNG", fMonth: "Tháng", fWeek: "Tuần", fRegion: "Miền", fArea: "Khu vực", optAll: "Tất cả", 
@@ -9,9 +178,9 @@ const dict = {
         kpiTotal: "TỔNG KH TRÊN TUYẾN", kpiTotalSub: "khách hàng", kpiActive: "Khách Active", kpiActiveSub: "khách hàng", 
         kpiStrike: "Strike Rate", kpiStrikeSub: "Tỷ lệ KH Active / Tổng", cAreaTitle: "HIỆU SUẤT THEO KHU VỰC (AREA)", 
         cKamTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAM", cDayTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAE",
-        axisCust: "Đơn vị: Mã KH", axisVnd: "Đơn vị: VNĐ", legSales: "Doanh số", legTotal: "Tổng KH", legActive: "KH Active",
+        axisCust: "Đơn vị: Mã KH", axisVnd: "Đơn vị: VNĐ", legSales: "Doanh số", legTotal: "Tổng KH Kế Hoạch", legActive: "KH Active",
         tblColArea: "Chỉ số / Khu vực", tblColKam: "Chỉ số / Ngày (KAM)", tblColDay: "Chỉ số / Ngày (KAE)",
-        rowRoute: "Tuyến", rowTotal: "KH Kế Hoạch (Master)", rowActive: "KH Lên đơn", rowSales: "Doanh số (VND)", rowSku: "SKU / Đơn (Avg)", rowStrike: "Strike Rate",
+        rowRoute: "Tuyến", rowTotal: "KH Tuyến (Plan)", rowActive: "KH Lên đơn", rowSales: "Doanh số (VND)", rowSku: "SKU / Đơn (Avg)", rowStrike: "Strike Rate",
         days: ["T2", "T3", "T4", "T5", "T6", "T7"], multiRoute: "Nhiều tuyến", noRoute: "Không có tuyến",
         kamSales: "TỔNG SELL OUT KAM", kamSalesSub: "VNĐ (Chưa VAT)", kamBR: "TỶ LỆ LÊN ĐƠN CỦA TEAM", kamBRSub: "Tỷ lệ KH Active / Tổng tuyến",
         kamContribArea: "ĐÓNG GÓP SELL OUT CHO AREA", kamContribAreaSub: "% Doanh số Area", kamContribNation: "ĐÓNG GÓP SELL OUT CHO TOÀN QUỐC", kamContribNationSub: "% Doanh số Toàn quốc",
@@ -37,6 +206,7 @@ const dict = {
 
 const weekDates = { vi: { "all": "Báo cáo tổng hợp tất cả các tuần", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" }, en: { "all": "Summary report for all weeks", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" } };
 let lang = 'vi';
+let enrichedMaster = []; // Mảng dbMaster sau khi Auto-VLOOKUP thêm KAM, HQ, Area
 let filters = { month: "all", week: "all", hq: "all", area: "all", kam: "all", kae: "all" };
 let charts = {};
 
@@ -44,14 +214,12 @@ const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
 /* ==========================================================================
-   >>> TỰ ĐỘNG VLOOKUP & LỌC DỮ LIỆU <<<
+   >>> ĐỘNG CƠ LIÊN KẾT DỮ LIỆU (AUTOMATIC DATA RELATION ENGINE) <<<
    ========================================================================== */
-let enrichedMaster = []; // Mảng dbMaster sau khi đã đắp thêm KAM, HQ, Area
-
 function prepareData() {
     if (typeof dbMaster === 'undefined' || typeof dbSales === 'undefined') return;
 
-    // 1. Tạo "Từ điển" chứa thông tin KAM, HQ, Area từ mảng dbSales
+    // 1. Tạo "Từ điển định danh" map KAE -> HQ, Area, KAM dựa trên bảng dbSales thực tế
     const kaeMap = {};
     dbSales.forEach(d => {
         if (d.kae && d.kam && d.kam.trim() !== "") {
@@ -59,13 +227,13 @@ function prepareData() {
         }
     });
 
-    // 2. VLOOKUP từ điển vào dbMaster. Nếu không có KAM -> Tự động bỏ qua
+    // 2. Tự động VLOOKUP đắp thông tin vào dbMaster. KAE nào không có KAM quản lý sẽ tự bỏ qua
     enrichedMaster = [];
     dbMaster.forEach(d => {
         let mapInfo = kaeMap[d.kae];
         if (mapInfo) { 
             enrichedMaster.push({
-                ...d, // Copy thông tin có sẵn (kae, month, week, day, cusCode, rt)
+                ...d, // Copy các cột có sẵn: month, kae, week, day, cusCode, rt
                 hq: mapInfo.hq,
                 area: mapInfo.area,
                 kam: mapInfo.kam
@@ -86,10 +254,12 @@ const parseDay = (dayStr) => {
 };
 
 const aggregateDualData = (masterSubset, salesSubset) => {
+    // Đếm Distinct Count khách Tuyến Kế Hoạch
     let masterSet = new Set();
     masterSubset.forEach(d => { if (d.cusCode) masterSet.add(d.cusCode); });
     let totalC = masterSet.size;
 
+    // Tính Doanh số, SKU và đếm Distinct Count khách Bán Thực Tế
     let sales = 0, skuLines = 0, invoiceCount = 0;
     let salesSet = new Set();
     
@@ -105,9 +275,13 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 
     let activeC = salesSet.size;
     let avgSku = invoiceCount > 0 ? (skuLines / invoiceCount) : 0;
+
     return { s: sales, tc: totalC, ac: activeC, avgSku: avgSku };
 };
 
+/* ==========================================================================
+   >>> ĐỘNG CƠ CO GIÃN SIDEBAR (UI RESIZER ENGINE) <<<
+   ========================================================================== */
 function initResizer() {
     const resizer = document.getElementById('dragMe');
     let isResizing = false;
@@ -122,16 +296,8 @@ function initResizer() {
     document.addEventListener('mouseup', function(e) { if (isResizing) { isResizing = false; document.body.classList.remove('no-select'); resizer.classList.remove('resizing'); } });
 }
 
-function setLang(newLang) {
-    lang = newLang;
-    document.getElementById('btn-vi').className = lang === 'vi' ? 'active' : '';
-    document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-    document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t(el.getAttribute('data-i18n')); });
-    renderFilters(); render();
-}
-
 function init() {
-    prepareData(); // 🔥 Chạy Auto-VLOOKUP ngay khi khởi động
+    prepareData(); // Thực thi Auto-VLOOKUP đồng bộ 2 luồng dữ liệu ngay lập tức
     
     ['monthFilter', 'weekFilter', 'hqFilter', 'areaFilter'].forEach(id => {
         document.getElementById(id).addEventListener('change', e => { filters[id.replace('Filter','')] = e.target.value; renderFilters(); render(); });
@@ -143,7 +309,6 @@ function init() {
 function updateF(type, val) { filters[type] = val; if (type === 'kam') filters.kae = "all"; renderFilters(); render(); }
 
 function renderFilters() {
-    // 🔥 Sử dụng enrichedMaster thay cho dbMaster
     const monthSel = document.getElementById("monthFilter");
     let availableMonths = [...new Set(enrichedMaster.map(d => d.month))].filter(Boolean);
     const monthOrder = { "jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6, "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12 };
@@ -196,17 +361,10 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
     let renderData = [...dataArray];
     if (showTotal && explicitTotal) renderData.push(explicitTotal);
 
-    if (isWeekTable) {
-        document.getElementById(headerId).innerHTML = `<th class="label-cell">${titleColName}</th>` + renderData.map(x => {
-            let isTotalCol = showTotal && x === renderData[renderData.length - 1];
-            return `<th style="${isTotalCol ? 'background: #042C53;' : ''}">${x[labelKey]}</th>`;
-        }).join("");
-    } else {
-        document.getElementById(headerId).innerHTML = `<th class="label-cell">${titleColName}</th>` + renderData.map(x => {
-            let isTotalCol = showTotal && x === renderData[renderData.length - 1];
-            return `<th style="${isTotalCol ? 'background: #042C53;' : ''}">${x[labelKey]}</th>`;
-        }).join("");
-    }
+    document.getElementById(headerId).innerHTML = `<th class="label-cell">${titleColName}</th>` + renderData.map(x => {
+        let isTotalCol = showTotal && x === renderData[renderData.length - 1];
+        return `<th style="${isTotalCol ? 'background: #042C53;' : ''}">${x[labelKey]}</th>`;
+    }).join("");
     
     let rows = [];
     if (isKaeTable) { rows.push({ l: t('rowRoute'), k: "route", f: v => `<span style="color:var(--b6); font-weight:600">${v || "-"}</span>` }); }
@@ -234,21 +392,24 @@ function render() {
 
     const applyFilters = (d) => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || d.week === filters.week) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area);
     
-    // 🔥 Sử dụng enrichedMaster thay cho dbMaster
+    // Quét trên mảng đã được Auto-VLOOKUP
     const workMaster = enrichedMaster.filter(applyFilters);
     const workSales = dbSales.filter(applyFilters);
 
+    // 1. KPI KHU VỰC TỔNG TRÊN CÙNG
     const sysKPI = aggregateDualData(workMaster, workSales);
     document.getElementById("val-sales").innerText = fmt(sysKPI.s);
     document.getElementById("val-cust").innerText = fmt(sysKPI.tc);
     document.getElementById("val-strike").innerText = fmt(sysKPI.ac);
     document.getElementById("val-strike-rate").innerText = (sysKPI.tc > 0 ? (sysKPI.ac/sysKPI.tc*100).toFixed(1) : 0) + "%";
 
+    // 2. BẢNG 1: HIỂU SUẤT THEO KHU VỰC (AREA)
     const areas = [...new Set(workMaster.map(d=>d.area))].filter(Boolean).sort(); 
     const areaData = areas.map(a => ({ label: a, ...aggregateDualData(workMaster.filter(d => d.area === a), workSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
 
+    // Định tuyến KAM / KAE linh hoạt
     let cKam = filters.kam;
     if (cKam === "all" && filters.kae !== "all") { const fKam = enrichedMaster.find(d => d.kae === filters.kae); if (fKam) cKam = fKam.kam; }
     
@@ -276,16 +437,19 @@ function render() {
         });
     };
 
+    // 3. BẢNG 2: HIỆU SUẤT THEO NGÀY CỦA KAM
     const kamDayData = getDayData(kamMaster, kamSalesData);
     const kamAgg = aggregateDualData(kamMaster, kamSalesData);
     drawChart('kamChart', kamDayData, 'd');
     drawTable('kamHeaderRow', 'kamTableBody', kamDayData, t('tblColKam'), 'd', false, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kamAgg, route: "-" }); 
 
+    // 4. BẢNG 3: HIỆU SUẤT THEO NGÀY CỦA KAE
     const kaeDayData = getDayData(kaeMaster, kaeSalesData);
     const kaeAgg = aggregateDualData(kaeMaster, kaeSalesData);
     drawChart('dayChart', kaeDayData, 'd');
     drawTable('dayHeaderRow', 'dayTableBody', kaeDayData, t('tblColDay'), 'd', true, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kaeAgg, route: "-" }); 
 
+    // Tính toán Thẻ đóng góp KPI KAM/KAE
     const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0);
     const nationSalesTotal = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || d.week === filters.week)).reduce((a,b)=>a+(Number(b.sales)||0),0);
 
@@ -294,6 +458,7 @@ function render() {
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
 
+    // 5. BẢNG 4: HIỆU SUẤT THEO TUẦN (WEEKLY PERFORMANCE)
     const mMonth = enrichedMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area) && (filters.kam === "all" || d.kam === filters.kam) && (filters.kae === "all" || d.kae === filters.kae));
     const sMonth = dbSales.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area) && (filters.kam === "all" || d.kam === filters.kam) && (filters.kae === "all" || d.kae === filters.kae));
     const realWeeks = [...new Set(mMonth.map(d=>d.week))].sort();
@@ -305,3 +470,5 @@ function render() {
 
 window.onload = init;
 </script>
+</body>
+</html>
