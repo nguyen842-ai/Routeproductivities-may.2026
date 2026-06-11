@@ -252,10 +252,10 @@ const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 // Máy giặt tên có map với file bên ngoài
 const cleanName = (name, isKamField = false) => {
     let cleanStr = String(name || "").replace(/[✔️❌]/g, '').trim();
-    if (isKamField && typeof kamMap !== 'undefined') {
-        let upperStr = cleanStr.toUpperCase();
-        if (kamMap[upperStr]) {
-            return kamMap[upperStr]; 
+    if (isKamField) {
+        cleanStr = cleanStr.toUpperCase(); // 🟢 ÉP IN HOA TOÀN BỘ TÊN KAM
+        if (typeof kamMap !== 'undefined' && kamMap[cleanStr]) {
+            return kamMap[cleanStr]; 
         }
     }
     return cleanStr;
