@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Productivity Dashboard - MOBILE APP EDITION</title>
+    <title>Route Productivity Dashboard - EXPERT TIERED FILTERS</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -15,7 +15,6 @@
         body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f4f8; color: var(--b7); font-size: 13px; overflow-x: hidden; }
         .db-container { display: flex; min-height: 100vh; position: relative; }
 
-        /* 🔥 LỚP PHỦ ĐEN MỜ KHI MỞ MENU TRÊN ĐIỆN THOẠI 🔥 */
         .overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; transition: opacity 0.3s;
@@ -65,7 +64,6 @@
 
         .main-content { flex: 1; min-width: 0; padding: 25px; overflow-y: auto; width: 100%; box-sizing: border-box; }
         
-        /* 🔥 NÚT BẬT TẮT MENU (CHỈ HIỆN TRÊN ĐIỆN THOẠI) 🔥 */
         .menu-btn {
             display: none; background: var(--b6); color: white; border: none; padding: 10px 16px; 
             font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-bottom: 20px; 
@@ -81,11 +79,10 @@
         .chart-box { background: white; border: 1px solid var(--b2); border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); max-width: 100%; box-sizing: border-box; }
         .chart-title { font-size: 14px; font-weight: 700; color: var(--b6); margin-bottom: 6px; display: flex; align-items: center; text-transform: uppercase; }
         .chart-title::before { content: ""; display: inline-block; width: 4px; height: 18px; background: var(--b4); margin-right: 10px; }
-        .chart-subtitle { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 25px; padding-left: 14px; text-transform: uppercase; font-style: italic; }
+        .chart-subtitle { font-size: 12px; font-weight: 600; color: #16a34a; margin-bottom: 25px; padding-left: 14px; text-transform: uppercase; font-style: italic; }
         
-        /* 🔥 BỌC THÉP CHO BẢNG CUỘN NGANG 🔥 */
         .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--b2); margin-top: 15px; width: 100%; display: block; -webkit-overflow-scrolling: touch; }
-        .data-table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; min-width: 800px; } /* Ép bảng luôn to hơn đt để có thanh cuộn */
+        .data-table { width: 100%; border-collapse: collapse; background: white; font-size: 12px; min-width: 800px; } 
         .data-table th { background: var(--b5); color: white; padding: 12px; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
         .data-table td { padding: 10px 12px; border: 1px solid #f1f5f9; text-align: center; line-height: 1.4; white-space: nowrap; }
         .label-cell { background: var(--b1); color: var(--b6); font-weight: 800; text-align: left !important; width: 160px; position: sticky; left: 0; z-index: 2; }
@@ -101,25 +98,24 @@
            🔥 GIAO DIỆN TƯƠNG THÍCH ĐIỆN THOẠI (MOBILE RESPONSIVE) 🔥
            ========================================================= */
         @media screen and (max-width: 768px) {
-            .menu-btn { display: flex; } /* Hiện nút Menu */
+            .menu-btn { display: flex; } 
             
             .sidebar {
                 position: fixed;
-                top: 0; left: -100%; /* Giấu sang trái */
+                top: 0; left: -100%; 
                 width: 85% !important; max-width: 380px; height: 100vh;
-                transition: left 0.3s ease; /* Hiệu ứng trượt mượt mà */
+                transition: left 0.3s ease; 
             }
-            .sidebar.open { left: 0; } /* Trượt ra khi mở */
+            .sidebar.open { left: 0; } 
             .resizer { display: none; }
             .top-filters { grid-template-columns: 1fr 1fr; }
             .personnel-filters { height: auto; min-height: 350px; }
 
             .main-content { padding: 10px; width: 100%; }
             .kpi-grid { grid-template-columns: 1fr 1fr; }
-            #segmentKpiContainer { grid-template-columns: 1fr 1fr; } /* Thẻ KPI phân khúc thu gọn lại */
+            #segmentKpiContainer { grid-template-columns: 1fr 1fr; } 
             .chart-box { padding: 15px; }
 
-            /* Bỏ position sticky trên điện thoại nếu nó làm kẹt cuộn ngang */
             .label-cell, .seg-area-cell, .seg-name-cell { position: relative; left: auto; z-index: 1; }
         }
     </style>
@@ -197,21 +193,21 @@
 
         <div class="chart-box">
             <div class="chart-title" data-i18n="cAreaTitle">HIỆU SUẤT THEO KHU VỰC (AREA)</div>
-            <div class="chart-subtitle"></div>
+            <div class="chart-subtitle" id="sub-area"></div>
             <div style="height: 380px;"><canvas id="areaChart"></canvas></div>
             <div class="table-wrap"><table class="data-table"><thead><tr id="areaHeaderRow"></tr></thead><tbody id="areaTableBody"></tbody></table></div>
         </div>
 
         <div class="chart-box">
             <div class="chart-title" data-i18n="cSegmentTitle">PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG (CUSTOMER SEGMENT BY AREA)</div>
-            <div class="chart-subtitle"></div>
+            <div class="chart-subtitle" id="sub-segment"></div>
             <div class="kpi-grid" id="segmentKpiContainer" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;"></div>
             <div class="table-wrap" id="segmentAreaTableContainer"></div>
         </div>
 
         <div class="chart-box">
             <div class="chart-title" data-i18n="cKamTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAM</div>
-            <div class="chart-subtitle"></div>
+            <div class="chart-subtitle" id="sub-kam"></div>
             <div class="kpi-grid">
                 <div class="kpi-card"><div class="label" data-i18n="kamSales">TỔNG DOANH SỐ KAM</div><div class="value" id="kam-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kamContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kam-val-contrib-area">0%</div><div class="sub" data-i18n="kamContribAreaSub">% Doanh số Area</div></div>
@@ -224,7 +220,7 @@
 
         <div class="chart-box">
             <div class="chart-title" data-i18n="cDayTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAE</div>
-            <div class="chart-subtitle"></div>
+            <div class="chart-subtitle" id="sub-kae"></div>
             <div class="kpi-grid">
                 <div class="kpi-card"><div class="label" data-i18n="kaeSales">TỔNG DOANH SỐ KAE</div><div class="value" id="kae-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kaeContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kae-val-contrib-area">0%</div><div class="sub" data-i18n="kamSalesSub">% Doanh số Area</div></div>
@@ -237,7 +233,7 @@
 
         <div class="chart-box">
             <div class="chart-title" data-i18n="cWeekTitle">HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG THEO TUẦN</div>
-            <div class="chart-subtitle" data-i18n="cWeekSubtitle">TỔNG HỢP DỮ LIỆU CÁC TUẦN</div>
+            <div class="chart-subtitle" id="sub-week"></div>
             <div style="height: 380px;"><canvas id="weekChart"></canvas></div>
             <div class="table-wrap"><table class="data-table"><thead><tr id="weekHeaderRow"></tr></thead><tbody id="weekTableBody"></tbody></table></div>
         </div>
@@ -246,7 +242,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="kamMap.js"></script>
-
 <script src="dataM5.js"></script>
 <script src="dataM6.js"></script>
 <script src="dataM7.js"></script>
@@ -289,17 +284,8 @@ const dict = {
     }
 };
 
-const segNames = {
-    'A': 'Class A (10MVND above)',
-    'B': 'Class B (5 MVND -> 9.9 MVND)',
-    'C': 'Class C (3 MVND -> 4.9 MVND)',
-    'D': 'Class D (below 3 MVND)',
-    'N': 'Is Classifying (0 MVND to less than 1 MVND)'
-};
-
+const segNames = { 'A': 'Class A (10MVND above)', 'B': 'Class B (5 MVND -> 9.9 MVND)', 'C': 'Class C (3 MVND -> 4.9 MVND)', 'D': 'Class D (below 3 MVND)', 'N': 'Is Classifying (0 MVND to less than 1 MVND)' };
 const segColors = { 'A': '#16a34a', 'B': '#2563eb', 'C': '#ea580c', 'D': '#dc2626', 'N': '#64748b' };
-const weekDates = { vi: { "all": "Báo cáo tổng hợp tất cả các tuần", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" }, en: { "all": "Summary report for all weeks", "W0": "W0", "W1": "W1", "W2": "W2", "W3": "W3", "W4": "W4" } };
-
 let lang = 'vi';
 let filters = { month: [], week: [], hq: [], area: [], kam: [], kae: [] };
 let charts = {};
@@ -307,23 +293,19 @@ let dbMaster = []; let dbSales = [];
 
 const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
-
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 
 const cleanName = (name, isKamField = false) => {
     let cleanStr = String(name || "").replace(/[✔️❌]/g, '').trim();
     if (isKamField) {
         cleanStr = cleanStr.toUpperCase(); 
-        if (typeof kamMap !== 'undefined' && kamMap[cleanStr]) {
-            return kamMap[cleanStr]; 
-        }
+        if (typeof kamMap !== 'undefined' && kamMap[cleanStr]) return kamMap[cleanStr]; 
     }
     return cleanStr;
 };
 
 const buildStatusMap = (subset, key) => {
-    let map = {};
-    let isKamField = (key === 'kam');
+    let map = {}; let isKamField = (key === 'kam');
     for (let i = subset.length - 1; i >= 0; i--) {
         let clean = cleanName(subset[i][key], isKamField);
         if (!map[clean]) {
@@ -357,7 +339,6 @@ const aggregateDualData = (masterSubset, salesSubset) => {
     salesSubset.forEach(d => {
         let currentSales = Number(d.sales) || 0;
         sales += currentSales; 
-        
         if (currentSales > 0) {
             skuLines += (Number(d.skuLines) || 0);
             invoiceCount++;
@@ -371,9 +352,7 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 };
 
 function renderSegmentTable(masterSubset, salesSubset) {
-    let cusSegmentMap = {};
-    let uniqueMasterCus = new Set();
-
+    let cusSegmentMap = {}; let uniqueMasterCus = new Set();
     masterSubset.forEach(d => {
         if (d.cusCode) {
             cusSegmentMap[d.cusCode] = d.CusS ? String(d.CusS).toUpperCase().trim() : "N";
@@ -384,44 +363,33 @@ function renderSegmentTable(masterSubset, salesSubset) {
     let globalSegCount = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'N': 0 };
     uniqueMasterCus.forEach(code => {
         let seg = cusSegmentMap[code] || 'N';
-        if(globalSegCount[seg] !== undefined) globalSegCount[seg]++;
-        else globalSegCount['N']++; 
+        if(globalSegCount[seg] !== undefined) globalSegCount[seg]++; else globalSegCount['N']++; 
     });
 
-    let totalCus = uniqueMasterCus.size;
-    let kpiHtml = '';
-    let segList = ['A', 'B', 'C', 'D', 'N'];
-    
+    let totalCus = uniqueMasterCus.size; let kpiHtml = ''; let segList = ['A', 'B', 'C', 'D', 'N'];
     segList.forEach(seg => {
-        let count = globalSegCount[seg];
-        let pct = totalCus > 0 ? ((count / totalCus) * 100).toFixed(1) + '%' : '0%';
-        let color = segColors[seg];
-        let displayTitle = (seg === 'N') ? "IS CLASSIFYING" : `CLASS ${seg}`;
-
+        let count = globalSegCount[seg]; let pct = totalCus > 0 ? ((count / totalCus) * 100).toFixed(1) + '%' : '0%';
+        let color = segColors[seg]; let displayTitle = (seg === 'N') ? "IS CLASSIFYING" : `CLASS ${seg}`;
         kpiHtml += `
             <div class="kpi-card" style="padding: 12px; border-bottom: 4px solid ${color};">
                 <div class="label" style="color: ${color}; font-weight: 800;">${displayTitle}</div>
                 <div class="value" style="color: var(--b7); font-size: 18px;">${fmt(count)}</div>
                 <div class="sub" style="color: #64748b; font-size: 11px; margin-top: 4px;">Tỷ trọng: <b style="color: ${color};">${pct}</b></div>
-            </div>
-        `;
+            </div>`;
     });
     const kpiContainer = document.getElementById('segmentKpiContainer');
     if (kpiContainer) kpiContainer.innerHTML = kpiHtml;
 
     let matrix = {};
     masterSubset.forEach(d => {
-        let area = d.area || "Unknown Area";
-        let seg = cusSegmentMap[d.cusCode] || "N";
-        let code = d.cusCode;
+        let area = d.area || "Unknown Area"; let code = d.cusCode; let seg = cusSegmentMap[code] || "N";
         if (!matrix[area]) matrix[area] = {};
         if (!matrix[area][seg]) matrix[area][seg] = { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
         if (code) matrix[area][seg].planSet.add(code);
     });
 
     salesSubset.forEach(d => {
-        let area = d.area || "Unknown Area";
-        let code = d.cusCode;
+        let area = d.area || "Unknown Area"; let code = d.cusCode;
         if (!code) return;
         let seg = cusSegmentMap[code] || "N";
         if (!matrix[area]) matrix[area] = {};
@@ -431,99 +399,52 @@ function renderSegmentTable(masterSubset, salesSubset) {
         if (currentSales > 0) matrix[area][seg].activeSet.add(code);
     });
 
-    let html = `
-        <table class="segment-table">
-            <thead>
-                <tr style="background-color: var(--b6); color: white;">
-                    <th rowspan="2" style="width:20%;">${lang==='vi'?'Khu vực (Area)':'Area'}</th>
-                    <th rowspan="2" style="width:25%;">${t('segColClass')}</th>
-                    <th colspan="5" style="padding:4px;">${lang==='vi'?'Chỉ số chi tiết phân khúc':'Segment Breakdown'}</th>
-                </tr>
-                <tr style="background-color: var(--b5); color: white;">
-                    <th style="width:11%;">${t('segColPlan')}</th>
-                    <th style="width:11%;">${t('segColAct')}</th>
-                    <th style="width:11%;">${t('segColSR')}</th>
-                    <th style="width:11%;">${t('segColSales')}</th>
-                    <th style="width:11%;">${t('segColAvg')}</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    let html = `<table class="segment-table"><thead><tr style="background-color: var(--b6); color: white;"><th rowspan="2" style="width:20%;">${lang==='vi'?'Khu vực (Area)':'Area'}</th><th rowspan="2" style="width:25%;">${t('segColClass')}</th><th colspan="5" style="padding:4px;">${lang==='vi'?'Chỉ số chi tiết phân khúc':'Segment Breakdown'}</th></tr><tr style="background-color: var(--b5); color: white;"><th style="width:11%;">${t('segColPlan')}</th><th style="width:11%;">${t('segColAct')}</th><th style="width:11%;">${t('segColSR')}</th><th style="width:11%;">${t('segColSales')}</th><th style="width:11%;">${t('segColAvg')}</th></tr></thead><tbody>`;
 
     let sortedAreas = Object.keys(matrix).sort();
     if(sortedAreas.length === 0) html += `<tr><td colspan="7" style="color:#999; padding:20px;">${lang==='vi'?'Không có dữ liệu phân khúc tương ứng bộ lọc':'No segment data matches filters'}</td></tr>`;
 
     sortedAreas.forEach(area => {
-        let isFirst = true;
-        let areaPlanCount = 0; let areaActCount = 0; let areaSalesSum = 0;
-
-        segList.forEach(seg => {
-            let data = matrix[area][seg] || { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
-            areaPlanCount += data.planSet.size; areaActCount += data.activeSet.size; areaSalesSum += data.salesSum;
-        });
+        let isFirst = true; let areaPlanCount = 0; let areaActCount = 0; let areaSalesSum = 0;
+        segList.forEach(seg => { let data = matrix[area][seg] || { planSet: new Set(), activeSet: new Set(), salesSum: 0 }; areaPlanCount += data.planSet.size; areaActCount += data.activeSet.size; areaSalesSum += data.salesSum; });
 
         segList.forEach(seg => {
             let data = matrix[area][seg] || { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
             let planCount = data.planSet.size; let actCount = data.activeSet.size;
             let sr = planCount > 0 ? ((actCount / planCount) * 100).toFixed(1) + '%' : '0.0%';
             let sales = data.salesSum; let avg = actCount > 0 ? Math.round(sales / actCount) : 0;
-
             html += `<tr>`;
             if (isFirst) { html += `<td rowspan="6" class="seg-area-cell">${area}</td>`; isFirst = false; }
-            html += `
-                <td class="seg-name-cell">${segNames[seg]}</td>
-                <td>${fmt(planCount)}</td>
-                <td style="color:green; font-weight:bold;">${fmt(actCount)}</td>
-                <td style="font-weight:bold;">${sr}</td>
-                <td style="text-align:right;">${fmt(sales)}</td>
-                <td style="text-align:right; color:var(--b5); font-weight:600;">${fmt(avg)}</td>
-            </tr>`;
+            html += `<td class="seg-name-cell">${segNames[seg]}</td><td>${fmt(planCount)}</td><td style="color:green; font-weight:bold;">${fmt(actCount)}</td><td style="font-weight:bold;">${sr}</td><td style="text-align:right;">${fmt(sales)}</td><td style="text-align:right; color:var(--b5); font-weight:600;">${fmt(avg)}</td></tr>`;
         });
 
         let areaSr = areaPlanCount > 0 ? ((areaActCount / areaPlanCount) * 100).toFixed(1) + '%' : '0.0%';
         let areaAvg = areaActCount > 0 ? Math.round(areaSalesSum / areaActCount) : 0;
         let txtTotal = lang === 'vi' ? 'TỔNG CỘNG' : 'TOTAL';
 
-        html += `<tr style="background-color: var(--b1); font-weight: bold; border-bottom: 2px solid var(--b3);">
-            <td class="seg-name-cell" style="color: var(--b7);">${txtTotal}</td>
-            <td>${fmt(areaPlanCount)}</td>
-            <td style="color:green;">${fmt(areaActCount)}</td>
-            <td style="color:var(--b7);">${areaSr}</td>
-            <td style="text-align:right; color:var(--b7);">${fmt(areaSalesSum)}</td>
-            <td style="text-align:right; color:var(--b6);">${fmt(areaAvg)}</td>
-        </tr>`;
+        html += `<tr style="background-color: var(--b1); font-weight: bold; border-bottom: 2px solid var(--b3);"><td class="seg-name-cell" style="color: var(--b7);">${txtTotal}</td><td>${fmt(areaPlanCount)}</td><td style="color:green;">${fmt(areaActCount)}</td><td style="color:var(--b7);">${areaSr}</td><td style="text-align:right; color:var(--b7);">${fmt(areaSalesSum)}</td><td style="text-align:right; color:var(--b6);">${fmt(areaAvg)}</td></tr>`;
     });
     html += `</tbody></table>`;
     document.getElementById('segmentAreaTableContainer').innerHTML = html;
 }
 
-// 🔥 TÍNH NĂNG MỞ MENU TRÊN ĐIỆN THOẠI 🔥
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('show');
-}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
 
 function initResizer() {
-    const resizer = document.getElementById('dragMe');
-    let isResizing = false;
+    const resizer = document.getElementById('dragMe'); let isResizing = false;
     resizer.addEventListener('mousedown', function(e) { isResizing = true; document.body.classList.add('no-select'); resizer.classList.add('resizing'); });
     document.addEventListener('mousemove', function(e) {
-        if (!isResizing) return;
-        let newWidth = e.clientX;
-        if (newWidth < 250) newWidth = 250;
-        if (newWidth > 700) newWidth = 700;
+        if (!isResizing) return; let newWidth = e.clientX;
+        if (newWidth < 250) newWidth = 250; if (newWidth > 700) newWidth = 700;
         document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
     });
     document.addEventListener('mouseup', function(e) { if (isResizing) { isResizing = false; document.body.classList.remove('no-select'); resizer.classList.remove('resizing'); } });
 }
 
 function setLang(newLang) {
-    lang = newLang;
-    document.getElementById('btn-vi').className = lang === 'vi' ? 'active' : '';
-    document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+    lang = newLang; document.getElementById('btn-vi').className = lang === 'vi' ? 'active' : ''; document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
     document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t(el.getAttribute('data-i18n')); });
-    renderFilters(); 
-    render();
+    renderFilters(); render();
 }
 
 let openMS = null;
@@ -534,22 +455,14 @@ function toggleMS(id) {
     else { drop.style.display = 'block'; openMS = id; }
 }
 document.addEventListener('click', e => {
-    if(!e.target.closest('.ms-box')) {
-        if(openMS) document.getElementById('drop-'+openMS).style.display = 'none';
-        openMS = null;
-    }
+    if(!e.target.closest('.ms-box')) { if(openMS) document.getElementById('drop-'+openMS).style.display = 'none'; openMS = null; }
 });
 
 function updateF(type, val) { 
-    if (val === 'all') {
-        filters[type] = [];
-        if (type === 'kam') filters.kae = []; 
-        if (type === 'hq') filters.area = []; 
+    if (val === 'all') { filters[type] = []; if (type === 'kam') filters.kae = []; if (type === 'hq') filters.area = []; 
     } else {
         let idx = filters[type].indexOf(val);
-        if (idx > -1) filters[type].splice(idx, 1); 
-        else filters[type].push(val); 
-
+        if (idx > -1) filters[type].splice(idx, 1); else filters[type].push(val); 
         if (type === 'kae') {
             const fKam = dbMaster.find(d => cleanName(d.kae) === val) || dbSales.find(d => cleanName(d.kae) === val);
             if (fKam && fKam.kam) {
@@ -558,23 +471,16 @@ function updateF(type, val) {
             }
         }
     }
-    renderFilters(); 
-    render(); 
+    renderFilters(); render(); 
 }
 
 function populateDropdown(id, type, optionsArr, tAll) {
-    let drop = document.getElementById('drop-' + id);
-    let lbl = document.getElementById('lbl-' + id);
-
+    let drop = document.getElementById('drop-' + id); let lbl = document.getElementById('lbl-' + id);
     if (filters[type].length === 0) lbl.innerText = tAll;
     else if (filters[type].length === 1) lbl.innerText = filters[type][0];
     else lbl.innerText = filters[type].length + ' đã chọn';
-
     let htmlStr = `<div class="ms-opt ${filters[type].length === 0 ? 'selected' : ''}" onclick="updateF('${type}', 'all')">${tAll}</div>`;
-    optionsArr.forEach(opt => {
-        let isSel = filters[type].includes(opt) ? 'selected' : '';
-        htmlStr += `<div class="ms-opt ${isSel}" onclick="updateF('${type}', '${opt}')">${opt}</div>`;
-    });
+    optionsArr.forEach(opt => { let isSel = filters[type].includes(opt) ? 'selected' : ''; htmlStr += `<div class="ms-opt ${isSel}" onclick="updateF('${type}', '${opt}')">${opt}</div>`; });
     drop.innerHTML = htmlStr;
 }
 
@@ -597,20 +503,21 @@ function renderFilters() {
     let availableAreas = [...new Set(dArea.map(d=>d.area))].filter(Boolean).sort();
     populateDropdown('area', 'area', availableAreas, t('optAll'));
 
-    const applyF = d => (filters.month.length === 0 || filters.month.includes(d.month)) && 
+    // 🔥 TẦNG 1: LỌC THEO THỜI GIAN VÀ ĐỊA LÝ 🔥
+    const baseApplyF = d => (filters.month.length === 0 || filters.month.includes(d.month)) && 
                         (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
                         (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
                         (filters.area.length === 0 || filters.area.includes(d.area));
     
-    const fMaster = dbMaster.filter(applyF);
-    const fSales = dbSales.filter(applyF);
+    const baseMaster = dbMaster.filter(baseApplyF);
+    const baseSales = dbSales.filter(baseApplyF);
     
     const globalKamStatus = buildStatusMap(allData, 'kam');
-    const localKamStatus = buildStatusMap(fMaster, 'kam');
+    const localKamStatus = buildStatusMap(baseMaster, 'kam');
     
     const kList = document.getElementById("kamList");
-    let masterKamsSet = new Set(fMaster.map(d => cleanName(d.kam, true)));
-    let salesKams = [...new Set(fSales.map(d => cleanName(d.kam, true)))];
+    let masterKamsSet = new Set(baseMaster.map(d => cleanName(d.kam, true)));
+    let salesKams = [...new Set(baseSales.map(d => cleanName(d.kam, true)))];
     let allKams = [...new Set([...masterKamsSet, ...salesKams])].filter(Boolean);
     
     let kamStatusMap = {};
@@ -637,9 +544,12 @@ function renderFilters() {
     });
     kList.innerHTML = kamHtml;
     
+    // 🔥 TẦNG 2: LỌC THEO KAM ĐỂ LẤY KAE TƯƠNG ỨNG 🔥
     const kaeList = document.getElementById("kaeList");
-    const mKaeData = filters.kam.length === 0 ? fMaster : fMaster.filter(d => filters.kam.includes(cleanName(d.kam, true)));
-    const sKaeData = filters.kam.length === 0 ? fSales : fSales.filter(d => filters.kam.includes(cleanName(d.kam, true)));
+    const kamApplyF = d => baseApplyF(d) && (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true)));
+    
+    const mKaeData = dbMaster.filter(kamApplyF);
+    const sKaeData = dbSales.filter(kamApplyF);
 
     const globalKaeStatus = buildStatusMap(allData, 'kae');
     const localKaeStatus = buildStatusMap(mKaeData, 'kae');
@@ -722,139 +632,141 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
     document.getElementById(bodyId).innerHTML = rows.map(r => `<tr><td class="label-cell">${r.l}</td>${renderData.map(item => { let isTotalCol = showTotal && item === renderData[renderData.length - 1]; return `<td style="${isTotalCol ? 'background: var(--b1); font-weight: bold;' : ''}">${r.f(item[r.k], item)}</td>`; }).join("")}</tr>`).join("");
 }
 
+// =========================================================
+// RENDER ĐỘC LẬP TỪNG TẦNG BIỂU ĐỒ (TIERED FILTERING)
+// =========================================================
 function render() {
     if (dbMaster.length === 0 && dbSales.length === 0) return; 
+
+    // 🔥 1. TẠO CÁC MẢNG DỮ LIỆU ĐỘC LẬP THEO TỪNG TẦNG 🔥
     
-    const isAllWeeks = filters.week.length === 0;
-    const selectedWeekText = isAllWeeks ? weekDates[lang]["all"] : (weekDates[lang][filters.week[0]] || filters.week.join(", "));
-    document.querySelectorAll('.chart-subtitle:not([data-i18n="cWeekSubtitle"])').forEach(el => { el.innerText = selectedWeekText; });
+    // Tầng 1: Chỉ ảnh hưởng bởi Thời gian, Miền, Khu vực
+    const baseApplyF = d => (filters.month.length === 0 || filters.month.includes(d.month)) && 
+                            (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
+                            (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
+                            (filters.area.length === 0 || filters.area.includes(d.area));
+    const baseMaster = dbMaster.filter(baseApplyF);
+    const baseSales = dbSales.filter(baseApplyF);
 
-    const applyFilters = (d) => 
-        (filters.month.length === 0 || filters.month.includes(d.month)) && 
-        (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
-        (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
-        (filters.area.length === 0 || filters.area.includes(d.area)) &&
-        (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true))) && 
-        (filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)));
-    
-    const workMaster = dbMaster.filter(applyFilters);
-    const workSales = dbSales.filter(applyFilters);
+    // Tầng 2: Ảnh hưởng thêm bởi KAM (Bỏ qua KAE)
+    const kamApplyF = d => baseApplyF(d) && (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true)));
+    const kamMaster = dbMaster.filter(kamApplyF);
+    const kamSales = dbSales.filter(kamApplyF);
 
-    const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
-    if (subtitleEl) {
-        let ms = filters.month.length === 0 ? t('optAll') : filters.month.map(x => x.toUpperCase()).join(", ");
-        let hs = filters.hq.length === 0 ? t('optAll') : filters.hq.join(", ");
-        let as = filters.area.length === 0 ? t('optAll') : filters.area.join(", ");
-        
-        const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
-        const globalKaeStatus = buildStatusMap([...dbMaster, ...dbSales], 'kae');
-
-        let kamsDisp = filters.kam.length === 0 ? t('optAll') : filters.kam.map(k => {
-            let st = globalKamStatus[k] || k;
-            if(!st.startsWith('❌') && !workMaster.some(d => cleanName(d.kam, true) === k)) return "🚨 " + k;
-            return st;
-        }).join("; ");
-
-        let kaesDisp = filters.kae.length === 0 ? t('optAll') : filters.kae.map(k => {
-            let st = globalKaeStatus[k] || k;
-            if(!st.startsWith('❌') && !workMaster.some(d => cleanName(d.kae) === k)) return "🚨 " + k;
-            return st;
-        }).join("; ");
-
-        subtitleEl.innerText = `${t('fMonth')}: ${ms} | ${t('fRegion')}: ${hs} | ${t('fArea')}: ${as} | KAM: ${kamsDisp} | KAE: ${kaesDisp}`;
+    // Xử lý tự động kéo KAM nếu chọn KAE
+    let inferredKams = [...filters.kam];
+    if (inferredKams.length === 0 && filters.kae.length > 0) { 
+        let tempKams = new Set();
+        filters.kae.forEach(k => {
+             const fKam = dbMaster.find(d => cleanName(d.kae) === k) || dbSales.find(d => cleanName(d.kae) === k);
+             if (fKam && fKam.kam) tempKams.add(cleanName(fKam.kam, true));
+        });
+        inferredKams = [...tempKams];
     }
+    
+    // Tầng 3: Ảnh hưởng bởi tất cả bộ lọc (Thời gian, KQ, Area, KAM, KAE)
+    const kaeApplyF = d => baseApplyF(d) && 
+                           (inferredKams.length === 0 || inferredKams.includes(cleanName(d.kam, true))) &&
+                           (filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)));
+    const kaeMaster = dbMaster.filter(kaeApplyF);
+    const kaeSales = dbSales.filter(kaeApplyF);
 
-    const sysKPI = aggregateDualData(workMaster, workSales);
+
+    // 🔥 2. XỬ LÝ CHUỖI MÔ TẢ (SUBTITLES) ĐỘC LẬP 🔥
+    let ms = filters.month.length === 0 ? t('optAll') : filters.month.map(x => x.toUpperCase()).join(", ");
+    let ws = filters.week.length === 0 ? t('optAll') : filters.week.join(", ");
+    let hs = filters.hq.length === 0 ? t('optAll') : filters.hq.join(", ");
+    let as = filters.area.length === 0 ? t('optAll') : filters.area.join(", ");
+
+    const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
+    const globalKaeStatus = buildStatusMap([...dbMaster, ...dbSales], 'kae');
+
+    let kamsDisp = filters.kam.length === 0 ? t('optAll') : filters.kam.map(k => {
+        let st = globalKamStatus[k] || k;
+        if(!st.startsWith('❌') && !baseMaster.some(d => cleanName(d.kam, true) === k)) return "🚨 " + k;
+        return st;
+    }).join("; ");
+
+    let kaesDisp = filters.kae.length === 0 ? t('optAll') : filters.kae.map(k => {
+        let st = globalKaeStatus[k] || k;
+        if(!st.startsWith('❌') && !baseMaster.some(d => cleanName(d.kae) === k)) return "🚨 " + k;
+        return st;
+    }).join("; ");
+
+    let baseSub = `${t('fMonth')}: ${ms} | ${t('fWeek')}: ${ws} | ${t('fRegion')}: ${hs} | ${t('fArea')}: ${as}`;
+    let kamSub = `${baseSub} | KAM: ${kamsDisp}`;
+    let kaeSub = `${kamSub} | KAE: ${kaesDisp}`;
+
+    if(document.getElementById('sub-area')) document.getElementById('sub-area').innerText = baseSub;
+    if(document.getElementById('sub-segment')) document.getElementById('sub-segment').innerText = baseSub;
+    if(document.getElementById('sub-kam')) document.getElementById('sub-kam').innerText = kamSub;
+    if(document.getElementById('sub-kae')) document.getElementById('sub-kae').innerText = kaeSub;
+    if(document.getElementById('sub-week')) document.getElementById('sub-week').innerText = kaeSub;
+
+
+    // 🔥 3. VẼ TẦNG 1: TOP KPI, AREA, SEGMENT (Sử dụng baseMaster, baseSales) 🔥
+    const sysKPI = aggregateDualData(baseMaster, baseSales);
     document.getElementById("val-sales").innerText = fmt(sysKPI.s);
     document.getElementById("val-cust").innerText = fmt(sysKPI.tc);
     document.getElementById("val-strike").innerText = fmt(sysKPI.ac);
     document.getElementById("val-strike-rate").innerText = (sysKPI.tc > 0 ? (sysKPI.ac/sysKPI.tc*100).toFixed(1) : 0) + "%";
 
-    const areas = [...new Set([...workMaster.map(d=>d.area), ...workSales.map(d=>d.area)])].filter(Boolean).sort(); 
-    const areaData = areas.map(a => ({ label: a, ...aggregateDualData(workMaster.filter(d => d.area === a), workSales.filter(d => d.area === a)) }));
+    const areas = [...new Set([...baseMaster.map(d=>d.area), ...baseSales.map(d=>d.area)])].filter(Boolean).sort(); 
+    const areaData = areas.map(a => ({ label: a, ...aggregateDualData(baseMaster.filter(d => d.area === a), baseSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
 
-    renderSegmentTable(workMaster, workSales);
+    renderSegmentTable(baseMaster, baseSales);
 
-    let cKams = [...filters.kam];
-    if (cKams.length === 0 && filters.kae.length > 0) { 
-        let inferredKams = new Set();
-        filters.kae.forEach(k => {
-             const fKam = dbMaster.find(d => cleanName(d.kae) === k) || dbSales.find(d => cleanName(d.kae) === k);
-             if (fKam && fKam.kam) inferredKams.add(cleanName(fKam.kam, true));
-        });
-        cKams = [...inferredKams];
-    }
     
-    const kamMaster = workMaster.filter(d => cKams.length === 0 || cKams.includes(cleanName(d.kam, true)));
-    const kamSalesData = workSales.filter(d => cKams.length === 0 || cKams.includes(cleanName(d.kam, true)));
-    const kaeMaster = kamMaster.filter(d => filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)));
-    const kaeSalesData = kamSalesData.filter(d => filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)));
-
+    // 🔥 4. VẼ TẦNG 2: KAM (Sử dụng kamMaster, kamSales) 🔥
     const getDayData = (mSubset, sSubset) => {
         return [0, 1, 2, 3, 4, 5].map(idx => {
             const mDay = mSubset.filter(d => parseDay(d.day) === idx);
             const sDay = sSubset.filter(d => parseDay(d.day) === idx);
             const agg = aggregateDualData(mDay, sDay);
-            
             let routes = new Set(); 
             mDay.forEach(d => { 
                 let r = d.rt ? String(d.rt).trim() : ""; 
                 if (r && r !== "0" && r.toLowerCase() !== "no route") routes.add(r.toUpperCase());
             });
-            let routeStr = routes.size === 0 ? "-" : Array.from(routes).sort().join("/");
-            
-            return { d: t('days')[idx], ...agg, route: routeStr };
+            return { d: t('days')[idx], ...agg, route: routes.size === 0 ? "-" : Array.from(routes).sort().join("/") };
         });
     };
 
-    const kamDayData = getDayData(kamMaster, kamSalesData);
-    const kamAgg = aggregateDualData(kamMaster, kamSalesData);
+    const kamDayData = getDayData(kamMaster, kamSales);
+    const kamAgg = aggregateDualData(kamMaster, kamSales);
     drawChart('kamChart', kamDayData, 'd');
     drawTable('kamHeaderRow', 'kamTableBody', kamDayData, t('tblColKam'), 'd', false, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kamAgg, route: "-" }); 
 
-    const kaeDayData = getDayData(kaeMaster, kaeSalesData);
-    const kaeAgg = aggregateDualData(kaeMaster, kaeSalesData);
+
+    // 🔥 5. VẼ TẦNG 3: KAE VÀ TUẦN (Sử dụng kaeMaster, kaeSales) 🔥
+    const kaeDayData = getDayData(kaeMaster, kaeSales);
+    const kaeAgg = aggregateDualData(kaeMaster, kaeSales);
     drawChart('dayChart', kaeDayData, 'd');
     drawTable('dayHeaderRow', 'dayTableBody', kaeDayData, t('tblColDay'), 'd', true, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kaeAgg, route: "-" }); 
 
-    const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0);
+    const realWeeks = [...new Set([...kaeMaster.map(d => getW(d)), ...kaeSales.map(d => getW(d))])].filter(w => w !== "").sort();
+    const weekData = realWeeks.map(w => ({ 
+        label: w, 
+        ...aggregateDualData(kaeMaster.filter(d => getW(d) === w), kaeSales.filter(d => getW(d) === w)) 
+    }));
+    drawChart('weekChart', weekData, 'label');
+    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { 
+        label: lang === 'vi' ? "TỔNG" : "TOTAL", 
+        ...aggregateDualData(kaeMaster, kaeSales), 
+        route: "-" 
+    });
+
+
+    // 🔥 6. UPDATE THÔNG SỐ KPI CON CHO TỪNG KHỐI 🔥
+    const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0); // Lấy từ Tầng 1
     const nationSalesTotal = dbSales.filter(d => (filters.month.length === 0 || filters.month.includes(d.month)) && (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase()))).reduce((a,b)=>a+(Number(b.sales)||0),0);
 
     document.getElementById("kam-val-sales").innerText = fmt(kamAgg.s); document.getElementById("kam-val-buying-rate").innerText = kamAgg.tc > 0 ? (kamAgg.ac / kamAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kam-val-contrib-area").innerText = areaSalesTotal > 0 ? (kamAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kam-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kamAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
-
-    const mMonth = dbMaster.filter(d => 
-        (filters.month.length === 0 || filters.month.includes(d.month)) && 
-        (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
-        (filters.area.length === 0 || filters.area.includes(d.area)) && 
-        (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true))) && 
-        (filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)))
-    );
-    const sMonth = dbSales.filter(d => 
-        (filters.month.length === 0 || filters.month.includes(d.month)) && 
-        (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
-        (filters.area.length === 0 || filters.area.includes(d.area)) && 
-        (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true))) && 
-        (filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)))
-    );
-    
-    const realWeeks = [...new Set([...mMonth.map(d => getW(d)), ...sMonth.map(d => getW(d))])].filter(w => w !== "").sort();
-    
-    const weekData = realWeeks.map(w => ({ 
-        label: w, 
-        ...aggregateDualData(mMonth.filter(d => getW(d) === w), sMonth.filter(d => getW(d) === w)) 
-    }));
-    
-    drawChart('weekChart', weekData, 'label');
-    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { 
-        label: lang === 'vi' ? "TỔNG" : "TOTAL", 
-        ...aggregateDualData(mMonth, sMonth), 
-        route: "-" 
-    });
 }
 
 function init() {
