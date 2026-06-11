@@ -163,7 +163,7 @@
             <div class="kpi-grid">
                 <div class="kpi-card"><div class="label" data-i18n="kaeSales">TỔNG DOANH SỐ KAE</div><div class="value" id="kae-val-sales">0</div><div class="sub" data-i18n="kamSalesSub">VNĐ (Chưa VAT)</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kaeContribArea">ĐÓNG GÓP DS CHO AREA</div><div class="value" id="kae-val-contrib-area">0%</div><div class="sub" data-i18n="kamSalesSub">% Doanh số Area</div></div>
-                <div class="kpi-card"><div class="label" data-i18n="kaeContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kae-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
+                <div class="kpi-card"><div class="label" data-i18n="kaeContribNation">ĐÓNG GÓP DS CHO TOÀN QUỐC</div><div class="value" id="kam-val-contrib-nation">0%</div><div class="sub" data-i18n="kamContribNationSub">% Doanh số Toàn quốc</div></div>
                 <div class="kpi-card"><div class="label" data-i18n="kaeBR">TỶ LỆ LÊN ĐƠN CỦA KHÁCH HÀNG</div><div class="value" id="kae-val-buying-rate">0%</div><div class="sub" data-i18n="kamBRSub">Tỷ lệ KH Active / Tổng tuyến</div></div>
             </div>
             <div style="height: 380px;"><canvas id="dayChart"></canvas></div>
@@ -195,17 +195,17 @@ const dict = {
         allKam: "🏠︎ TẤT CẢ KAM", allKae: "🏠︎ TẤT CẢ KAE/DSR", kpiSales: "TỔNG SELL OUT", kpiSalesSub: "VNĐ (Chưa VAT)", 
         kpiTotal: "TỔNG KH TRÊN TUYẾN", kpiTotalSub: "khách hàng", kpiActive: "Khách Active", kpiActiveSub: "khách hàng", 
         kpiStrike: "Strike Rate", kpiStrikeSub: "Tỷ lệ KH Active / Tổng", cAreaTitle: "HIỆU SUẤT THEO KHU VỰC (AREA)", 
-        cSegmentTitle: "📊 PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG (CUSTOMER SEGMENT BY AREA)",
+        cSegmentTitle: "📊 PHÂN TÍCH HIỆU SUẤT THEO PHÂN LOẠI KHÁCH HÀNG",
         cKamTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAM", cDayTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAE",
-        axisCust: "Đơn vị: Mã KH", axisVnd: "Đơn vị: VNĐ", legSales: "Doanh số", legTotal: "Tổng KH Kế Hoạch", legActive: "KH Active",
+        axisCust: "Đơn vị: Mã KH", axisVnd: "Đơn vị: VNĐ", legSales: "Doanh số", legTotal: "Tổng KH Trên tuyến", legActive: "KH Active",
         tblColArea: "Chỉ số / Khu vực", tblColKam: "Chỉ số / Ngày (KAM)", tblColDay: "Chỉ số / Ngày (KAE)",
-        rowRoute: "Tuyến", rowTotal: "KH Tuyến (Plan)", rowActive: "KH Lên đơn", rowSales: "Doanh số (VND)", rowSku: "SKU / Đơn (Avg)", rowStrike: "Strike Rate",
+        rowRoute: "Tuyến", rowTotal: "KH Trên tuyến", rowActive: "KH Lên đơn", rowSales: "Doanh số (VND)", rowSku: "SKU / Đơn (Avg)", rowStrike: "Strike Rate",
         days: ["T2", "T3", "T4", "T5", "T6", "T7"], multiRoute: "Nhiều tuyến", noRoute: "Không có tuyến",
         kamSales: "TỔNG SELL OUT KAM", kamSalesSub: "VNĐ (Chưa VAT)", kamBR: "TỶ LỆ LÊN ĐƠN CỦA TEAM", kamBRSub: "Tỷ lệ KH Active / Tổng tuyến",
         kamContribArea: "ĐÓNG GÓP SELL OUT CHO AREA", kamContribAreaSub: "% Doanh số Area", kamContribNation: "ĐÓNG GÓP SELL OUT CHO TOÀN QUỐC", kamContribNationSub: "% Doanh số Toàn quốc",
         kaeSales: "TỔNG SELL OUT KAE", kaeBR: "TỶ LỆ LÊN ĐƠN CỦA KHÁCH HÀNG DO KAE CHĂM SÓC", kaeContribArea: "ĐÓNG GÓP SELL OUT CỦA KAE CHO AREA", kaeContribNation: "ĐÓNG GÓP SELL OUT CỦA KAE CHO TOÀN QUỐC",
         cWeekTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG THEO TUẦN", cWeekSubtitle: "TỔNG HỢP DỮ LIỆU CÁC TUẦN", tblColWeek: "Chỉ số / Tuần",
-        segColClass: "Mã Class / Phân khúc", segColPlan: "KH Tuyến (Plan)", segColAct: "KH Lên Đơn (Active)", segColSR: "Strike Rate", segColSales: "Doanh số (VND)", segColAvg: "TB Doanh Số / KH Active"
+        segColClass: "Class / Phân loại KH", segColPlan: "KH Trên tuyến", segColAct: "KH Lên Đơn", segColSR: "Strike Rate", segColSales: "Doanh số (VND)", segColAvg: "TB Doanh Số / KH Active"
     },
     en: {
         sysTitle: "ROUTE PRODUCTIVITIES REPORT", fMonth: "Month", fWeek: "Week", fRegion: "Region", fArea: "Area", optAll: "All", 
@@ -214,9 +214,9 @@ const dict = {
         kpiStrike: "Strike Rate", kpiStrikeSub: "Active / Total Ratio", cAreaTitle: "PERFORMANCE BY AREA", 
         cSegmentTitle: "📊 CUSTOMER SEGMENT PRODUCTIVITY BY AREA",
         cKamTitle: "SALES & CUSTOMER PERFORMANCE BY KAM", cDayTitle: "SALES & CUSTOMER PERFORMANCE BY KAE",
-        axisCust: "Unit: Cust. Codes", axisVnd: "Unit: VND", legSales: "Sales", legTotal: "Planned Cust.", legActive: "Active Cust.",
+        axisCust: "Unit: Cust. Codes", axisVnd: "Unit: VND", legSales: "Sales", legTotal: " Customers in Route", legActive: "Active Customers",
         tblColArea: "Metric / Area", tblColKam: "Metric / Day (KAM)", tblColDay: "Metric / Day (KAE)",
-        rowRoute: "Route", rowTotal: "Planned Route Cust.", rowActive: "Ordered Cust.", rowSales: "Sales (VND)", rowSku: "Avg SKU / Invc", rowStrike: "Strike Rate",
+        rowRoute: "Route", rowTotal: "Customers in Route", rowActive: "Customers Ordered", rowSales: "Sales (VND)", rowSku: "Avg SKU / Invc", rowStrike: "Strike Rate",
         days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], multiRoute: "Multiple", noRoute: "No route",
         kamSales: "TOTAL SELL OUT BY KAM", kamSalesSub: "VND (Excl. VAT)", kamBR: "CUSTOMER BUYING RATE", kamBRSub: "Active / Total Route",
         kamContribArea: "SELL OUT CONTRIBUTES TO AREA", kamContribAreaSub: "% Sales / Area", kamContribNation: "SELL OUT CONTRIBUTES TO NATIONWIDE", kamContribNationSub: "% Sales / Nationwide",
@@ -284,7 +284,7 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 };
 
 // =========================================================
-// 4. HÀM TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MATRIX CUSTOMER SEGMENT (FIXED)
+// 4. HÀM TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MATRIX CUSTOMER SEGMENT (CÓ THÊM HÀNG TỔNG)
 // =========================================================
 function renderSegmentTable(masterSubset, salesSubset) {
     let cusSegmentMap = {};
@@ -358,6 +358,21 @@ function renderSegmentTable(masterSubset, salesSubset) {
 
     sortedAreas.forEach(area => {
         let isFirst = true;
+        
+        // CÁC BIẾN CỘNG DỒN CHO HÀNG TỔNG
+        let areaPlanCount = 0;
+        let areaActCount = 0;
+        let areaSalesSum = 0;
+
+        // Vòng lặp 1: Tính toán trước các con số tổng
+        segList.forEach(seg => {
+            let data = matrix[area][seg] || { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
+            areaPlanCount += data.planSet.size;
+            areaActCount += data.activeSet.size;
+            areaSalesSum += data.salesSum;
+        });
+
+        // Vòng lặp 2: Render các hàng phân khúc A, B, C, D, N
         segList.forEach(seg => {
             let data = matrix[area][seg] || { planSet: new Set(), activeSet: new Set(), salesSum: 0 };
             let planCount = data.planSet.size;
@@ -368,7 +383,8 @@ function renderSegmentTable(masterSubset, salesSubset) {
 
             html += `<tr>`;
             if (isFirst) {
-                html += `<td rowspan="5" class="seg-area-cell">${area}</td>`;
+                // Đổi rowspan thành 6 (5 Class + 1 Hàng Tổng)
+                html += `<td rowspan="6" class="seg-area-cell">${area}</td>`;
                 isFirst = false;
             }
             html += `
@@ -380,6 +396,20 @@ function renderSegmentTable(masterSubset, salesSubset) {
                 <td style="text-align:right; color:var(--b5); font-weight:600;">${fmt(avg)}</td>
             </tr>`;
         });
+
+        // RENDER THÊM HÀNG "TỔNG CỘNG" Ở ĐÁY MỖI KHU VỰC
+        let areaSr = areaPlanCount > 0 ? ((areaActCount / areaPlanCount) * 100).toFixed(1) + '%' : '0.0%';
+        let areaAvg = areaActCount > 0 ? Math.round(areaSalesSum / areaActCount) : 0;
+        let txtTotal = lang === 'vi' ? 'TỔNG CỘNG' : 'TOTAL';
+
+        html += `<tr style="background-color: var(--b1); font-weight: bold; border-bottom: 2px solid var(--b3);">
+            <td class="seg-name-cell" style="color: var(--b7);">${txtTotal}</td>
+            <td>${fmt(areaPlanCount)}</td>
+            <td style="color:green;">${fmt(areaActCount)}</td>
+            <td style="color:var(--b7);">${areaSr}</td>
+            <td style="text-align:right; color:var(--b7);">${fmt(areaSalesSum)}</td>
+            <td style="text-align:right; color:var(--b6);">${fmt(areaAvg)}</td>
+        </tr>`;
     });
 
     html += `</tbody></table>`;
@@ -531,7 +561,7 @@ function render() {
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
 
-    // 6.3 KÍCH HOẠT MA TRẬN PHÂN KHÚC CUSTOMER SEGMENT
+    // 6.3 KÍCH HOẠT MA TRẬN PHÂN KHÚC CUSTOMER SEGMENT (CÓ HÀNG TỔNG)
     renderSegmentTable(workMaster, workSales);
 
     // 6.4 KHỐI LỌC KAM / KAE
@@ -582,7 +612,7 @@ function render() {
     document.getElementById("kae-val-sales").innerText = fmt(kaeAgg.s); document.getElementById("kae-val-buying-rate").innerText = kaeAgg.tc > 0 ? (kaeAgg.ac / kaeAgg.tc * 100).toFixed(1) + "%" : "0%";
     document.getElementById("kae-val-contrib-area").innerText = areaSalesTotal > 0 ? (kaeAgg.s / areaSalesTotal * 100).toFixed(1) + "%" : "0%"; document.getElementById("kae-val-contrib-nation").innerText = nationSalesTotal > 0 ? (kaeAgg.s / nationSalesTotal * 100).toFixed(1) + "%" : "0%";
 
-    // 🔥 6.5 KHỐI PERFORMANCE THEO TUẦN (BỌC THÉP CHỐNG LỖI CHỮ HOA/THƯỜNG THỰC CHIẾN) 🔥
+    // 6.5 KHỐI PERFORMANCE THEO TUẦN (CHỐNG LỖI CHỮ HOA/THƯỜNG)
     const mMonth = dbMaster.filter(d => 
         (filters.month === "all" || d.month === filters.month) && 
         (filters.hq === "all" || d.hq === filters.hq) && 
