@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Productivity Dashboard - EXPERT TIERED FILTERS</title>
+    <title>Route Productivity Dashboard - CASCADING TIERED EDITION</title>
     <style>
         /* =========================================================
            1. CẤU HÌNH MÀU SẮC & GIAO DIỆN CHUNG
@@ -101,8 +101,7 @@
             .menu-btn { display: flex; } 
             
             .sidebar {
-                position: fixed;
-                top: 0; left: -100%; 
+                position: fixed; top: 0; left: -100%; 
                 width: 85% !important; max-width: 380px; height: 100vh;
                 transition: left 0.3s ease; 
             }
@@ -113,7 +112,7 @@
 
             .main-content { padding: 10px; width: 100%; }
             .kpi-grid { grid-template-columns: 1fr 1fr; }
-            #segmentKpiContainer { grid-template-columns: 1fr 1fr; } 
+            #segmentKpiContainer { grid-template-columns: 1fr 1fr 1fr !important; } 
             .chart-box { padding: 15px; }
 
             .label-cell, .seg-area-cell, .seg-name-cell { position: relative; left: auto; z-index: 1; }
@@ -458,19 +457,64 @@ document.addEventListener('click', e => {
     if(!e.target.closest('.ms-box')) { if(openMS) document.getElementById('drop-'+openMS).style.display = 'none'; openMS = null; }
 });
 
+// 🔥 BỘ LỌC THÁC NƯỚC (CASCADING FILTER) THÔNG MINH 🔥
 function updateF(type, val) { 
-    if (val === 'all') { filters[type] = []; if (type === 'kam') filters.kae = []; if (type === 'hq') filters.area = []; 
+    if (val === 'all') { 
+        filters[type] = []; 
+        if (type === 'month') filters.week = [];
+        if (type === 'hq') filters.area = []; 
+        if (type === 'kam') filters.kae = []; 
     } else {
         let idx = filters[type].indexOf(val);
-        if (idx > -1) filters[type].splice(idx, 1); else filters[type].push(val); 
-        if (type === 'kae') {
-            const fKam = dbMaster.find(d => cleanName(d.kae) === val) || dbSales.find(d => cleanName(d.kae) === val);
-            if (fKam && fKam.kam) {
-                let kName = cleanName(fKam.kam, true);
-                if (!filters.kam.includes(kName)) filters.kam.push(kName);
+        if (idx > -1) {
+            filters[type].splice(idx, 1); // Bỏ chọn
+        } else {
+            filters[type].push(val); // Chọn
+            
+            // Giật lùi: Tự động kéo Parent theo Child
+            if (type === 'week') {
+                let f = dbMaster.find(d => getW(d) === val) || dbSales.find(d => getW(d) === val);
+                if (f && f.month && !filters.month.includes(f.month)) filters.month.push(f.month);
+            }
+            if (type === 'area') {
+                let f = dbMaster.find(d => d.area === val) || dbSales.find(d => d.area === val);
+                if (f && f.hq && !filters.hq.includes(f.hq)) filters.hq.push(f.hq);
+            }
+            if (type === 'kae') {
+                let f = dbMaster.find(d => cleanName(d.kae) === val) || dbSales.find(d => cleanName(d.kae) === val);
+                if (f && f.kam) {
+                    let kName = cleanName(f.kam, true);
+                    if (!filters.kam.includes(kName)) filters.kam.push(kName);
+                }
             }
         }
     }
+
+    // ✂️ MÁY TỈA CÀNH (Cắt tỉa các Child mất Parent tương ứng)
+    // 1. Month -> Week
+    if (filters.month.length > 0) {
+        let valid = new Set();
+        for(let i=0; i<dbMaster.length; i++) { if(filters.month.includes(dbMaster[i].month)) valid.add(getW(dbMaster[i])); }
+        for(let i=0; i<dbSales.length; i++) { if(filters.month.includes(dbSales[i].month)) valid.add(getW(dbSales[i])); }
+        filters.week = filters.week.filter(w => valid.has(w));
+    } else if (type === 'month') filters.week = [];
+
+    // 2. HQ -> Area
+    if (filters.hq.length > 0) {
+        let valid = new Set();
+        for(let i=0; i<dbMaster.length; i++) { if(filters.hq.includes(dbMaster[i].hq)) valid.add(dbMaster[i].area); }
+        for(let i=0; i<dbSales.length; i++) { if(filters.hq.includes(dbSales[i].hq)) valid.add(dbSales[i].area); }
+        filters.area = filters.area.filter(a => valid.has(a));
+    } else if (type === 'hq') filters.area = [];
+
+    // 3. KAM -> KAE
+    if (filters.kam.length > 0) {
+        let valid = new Set();
+        for(let i=0; i<dbMaster.length; i++) { if(filters.kam.includes(cleanName(dbMaster[i].kam, true))) valid.add(cleanName(dbMaster[i].kae)); }
+        for(let i=0; i<dbSales.length; i++) { if(filters.kam.includes(cleanName(dbSales[i].kam, true))) valid.add(cleanName(dbSales[i].kae)); }
+        filters.kae = filters.kae.filter(k => valid.has(k));
+    } else if (type === 'kam') filters.kae = [];
+
     renderFilters(); render(); 
 }
 
@@ -503,11 +547,10 @@ function renderFilters() {
     let availableAreas = [...new Set(dArea.map(d=>d.area))].filter(Boolean).sort();
     populateDropdown('area', 'area', availableAreas, t('optAll'));
 
-    // 🔥 TẦNG 1: LỌC THEO THỜI GIAN VÀ ĐỊA LÝ 🔥
     const baseApplyF = d => (filters.month.length === 0 || filters.month.includes(d.month)) && 
-                        (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
-                        (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
-                        (filters.area.length === 0 || filters.area.includes(d.area));
+                            (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
+                            (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
+                            (filters.area.length === 0 || filters.area.includes(d.area));
     
     const baseMaster = dbMaster.filter(baseApplyF);
     const baseSales = dbSales.filter(baseApplyF);
@@ -544,7 +587,6 @@ function renderFilters() {
     });
     kList.innerHTML = kamHtml;
     
-    // 🔥 TẦNG 2: LỌC THEO KAM ĐỂ LẤY KAE TƯƠNG ỨNG 🔥
     const kaeList = document.getElementById("kaeList");
     const kamApplyF = d => baseApplyF(d) && (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true)));
     
@@ -632,15 +674,10 @@ function drawTable(headerId, bodyId, dataArray, titleColName, labelKey, isKaeTab
     document.getElementById(bodyId).innerHTML = rows.map(r => `<tr><td class="label-cell">${r.l}</td>${renderData.map(item => { let isTotalCol = showTotal && item === renderData[renderData.length - 1]; return `<td style="${isTotalCol ? 'background: var(--b1); font-weight: bold;' : ''}">${r.f(item[r.k], item)}</td>`; }).join("")}</tr>`).join("");
 }
 
-// =========================================================
-// RENDER ĐỘC LẬP TỪNG TẦNG BIỂU ĐỒ (TIERED FILTERING)
-// =========================================================
 function render() {
     if (dbMaster.length === 0 && dbSales.length === 0) return; 
 
-    // 🔥 1. TẠO CÁC MẢNG DỮ LIỆU ĐỘC LẬP THEO TỪNG TẦNG 🔥
-    
-    // Tầng 1: Chỉ ảnh hưởng bởi Thời gian, Miền, Khu vực
+    // Tầng 1
     const baseApplyF = d => (filters.month.length === 0 || filters.month.includes(d.month)) && 
                             (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase())) && 
                             (filters.hq.length === 0 || filters.hq.includes(d.hq)) && 
@@ -648,12 +685,11 @@ function render() {
     const baseMaster = dbMaster.filter(baseApplyF);
     const baseSales = dbSales.filter(baseApplyF);
 
-    // Tầng 2: Ảnh hưởng thêm bởi KAM (Bỏ qua KAE)
+    // Tầng 2
     const kamApplyF = d => baseApplyF(d) && (filters.kam.length === 0 || filters.kam.includes(cleanName(d.kam, true)));
     const kamMaster = dbMaster.filter(kamApplyF);
     const kamSales = dbSales.filter(kamApplyF);
 
-    // Xử lý tự động kéo KAM nếu chọn KAE
     let inferredKams = [...filters.kam];
     if (inferredKams.length === 0 && filters.kae.length > 0) { 
         let tempKams = new Set();
@@ -664,15 +700,14 @@ function render() {
         inferredKams = [...tempKams];
     }
     
-    // Tầng 3: Ảnh hưởng bởi tất cả bộ lọc (Thời gian, KQ, Area, KAM, KAE)
+    // Tầng 3
     const kaeApplyF = d => baseApplyF(d) && 
                            (inferredKams.length === 0 || inferredKams.includes(cleanName(d.kam, true))) &&
                            (filters.kae.length === 0 || filters.kae.includes(cleanName(d.kae)));
     const kaeMaster = dbMaster.filter(kaeApplyF);
     const kaeSales = dbSales.filter(kaeApplyF);
 
-
-    // 🔥 2. XỬ LÝ CHUỖI MÔ TẢ (SUBTITLES) ĐỘC LẬP 🔥
+    // TIÊU ĐỀ
     let ms = filters.month.length === 0 ? t('optAll') : filters.month.map(x => x.toUpperCase()).join(", ");
     let ws = filters.week.length === 0 ? t('optAll') : filters.week.join(", ");
     let hs = filters.hq.length === 0 ? t('optAll') : filters.hq.join(", ");
@@ -703,8 +738,7 @@ function render() {
     if(document.getElementById('sub-kae')) document.getElementById('sub-kae').innerText = kaeSub;
     if(document.getElementById('sub-week')) document.getElementById('sub-week').innerText = kaeSub;
 
-
-    // 🔥 3. VẼ TẦNG 1: TOP KPI, AREA, SEGMENT (Sử dụng baseMaster, baseSales) 🔥
+    // VẼ TẦNG 1
     const sysKPI = aggregateDualData(baseMaster, baseSales);
     document.getElementById("val-sales").innerText = fmt(sysKPI.s);
     document.getElementById("val-cust").innerText = fmt(sysKPI.tc);
@@ -715,11 +749,9 @@ function render() {
     const areaData = areas.map(a => ({ label: a, ...aggregateDualData(baseMaster.filter(d => d.area === a), baseSales.filter(d => d.area === a)) }));
     drawChart('areaChart', areaData, 'label');
     drawTable('areaHeaderRow', 'areaTableBody', areaData, t('tblColArea'), 'label', false, false, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...sysKPI, route: "-" });
-
     renderSegmentTable(baseMaster, baseSales);
 
-    
-    // 🔥 4. VẼ TẦNG 2: KAM (Sử dụng kamMaster, kamSales) 🔥
+    // VẼ TẦNG 2
     const getDayData = (mSubset, sSubset) => {
         return [0, 1, 2, 3, 4, 5].map(idx => {
             const mDay = mSubset.filter(d => parseDay(d.day) === idx);
@@ -733,14 +765,12 @@ function render() {
             return { d: t('days')[idx], ...agg, route: routes.size === 0 ? "-" : Array.from(routes).sort().join("/") };
         });
     };
-
     const kamDayData = getDayData(kamMaster, kamSales);
     const kamAgg = aggregateDualData(kamMaster, kamSales);
     drawChart('kamChart', kamDayData, 'd');
     drawTable('kamHeaderRow', 'kamTableBody', kamDayData, t('tblColKam'), 'd', false, false, true, { 'd': lang === 'vi' ? "TỔNG" : "TOTAL", ...kamAgg, route: "-" }); 
 
-
-    // 🔥 5. VẼ TẦNG 3: KAE VÀ TUẦN (Sử dụng kaeMaster, kaeSales) 🔥
+    // VẼ TẦNG 3
     const kaeDayData = getDayData(kaeMaster, kaeSales);
     const kaeAgg = aggregateDualData(kaeMaster, kaeSales);
     drawChart('dayChart', kaeDayData, 'd');
@@ -752,15 +782,10 @@ function render() {
         ...aggregateDualData(kaeMaster.filter(d => getW(d) === w), kaeSales.filter(d => getW(d) === w)) 
     }));
     drawChart('weekChart', weekData, 'label');
-    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { 
-        label: lang === 'vi' ? "TỔNG" : "TOTAL", 
-        ...aggregateDualData(kaeMaster, kaeSales), 
-        route: "-" 
-    });
+    drawTable('weekHeaderRow', 'weekTableBody', weekData, t('tblColWeek'), 'label', false, true, true, { label: lang === 'vi' ? "TỔNG" : "TOTAL", ...aggregateDualData(kaeMaster, kaeSales), route: "-" });
 
-
-    // 🔥 6. UPDATE THÔNG SỐ KPI CON CHO TỪNG KHỐI 🔥
-    const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0); // Lấy từ Tầng 1
+    // KPI CON
+    const areaSalesTotal = areaData.reduce((sum, a) => sum + a.s, 0); 
     const nationSalesTotal = dbSales.filter(d => (filters.month.length === 0 || filters.month.includes(d.month)) && (filters.week.length === 0 || filters.week.includes(getW(d).toUpperCase()))).reduce((a,b)=>a+(Number(b.sales)||0),0);
 
     document.getElementById("kam-val-sales").innerText = fmt(kamAgg.s); document.getElementById("kam-val-buying-rate").innerText = kamAgg.tc > 0 ? (kamAgg.ac / kamAgg.tc * 100).toFixed(1) + "%" : "0%";
