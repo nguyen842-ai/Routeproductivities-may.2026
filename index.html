@@ -214,18 +214,60 @@ const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
 /* ==========================================================================
-   >>> ĐỘNG CƠ LIÊN KẾT DỮ LIỆU (AUTOMATIC DATA RELATION ENGINE) <<<
+   >>> ĐỘNG CƠ LIÊN KẾT DỮ LIỆU (SMART VLOOKUP & DIAGNOSTIC ENGINE) <<<
    ========================================================================== */
 function prepareData() {
-    if (typeof dbMaster === 'undefined' || typeof dbSales === 'undefined') return;
+    // 1. Kiểm tra file data.js có đọc được không
+    if (typeof dbMaster === 'undefined' || typeof dbSales === 'undefined') {
+        alert("🚨 LỖI HỆ THỐNG: Không đọc được file data.js. Hãy kiểm tra xem file có bị sai cú pháp (thiếu dấu phẩy, thiếu ngoặc kép) không nhé!");
+        return;
+    }
 
-    // 1. Tạo "Từ điển định danh" map KAE -> HQ, Area, KAM dựa trên bảng dbSales thực tế
+    // 2. Tạo "Từ điển" (Gọt sạch khoảng trắng 2 đầu và ép chữ thường để bao khớp 100%)
     const kaeMap = {};
     dbSales.forEach(d => {
         if (d.kae && d.kam && d.kam.trim() !== "") {
-            kaeMap[d.kae] = { hq: d.hq, area: d.area, kam: d.kam };
+            let safeKey = String(d.kae).trim().toLowerCase();
+            kaeMap[safeKey] = { hq: d.hq, area: d.area, kam: d.kam };
         }
     });
+
+    // 3. Tự động VLOOKUP đắp thông tin vào dbMaster
+    enrichedMaster = [];
+    let mappedCount = 0;
+
+    dbMaster.forEach(d => {
+        if (!d.kae) return;
+        let safeKey = String(d.kae).trim().toLowerCase();
+        let mapInfo = kaeMap[safeKey];
+        
+        if (mapInfo) { 
+            // Khớp thành công
+            enrichedMaster.push({
+                ...d, 
+                hq: mapInfo.hq,
+                area: mapInfo.area,
+                kam: mapInfo.kam
+            });
+            mappedCount++;
+        } else {
+            // LƯỚI AN TOÀN: Trượt VLOOKUP thì không xóa, gán chữ LỖI để vẫn hiện lên Dashboard
+            enrichedMaster.push({
+                ...d, 
+                hq: "⚠️ LỖI MAP",
+                area: "⚠️ LỖI MAP",
+                kam: "⚠️ CHƯA CÓ KAM"
+            });
+        }
+    });
+
+    // 4. BỘ CHẨN ĐOÁN LỖI TỰ ĐỘNG
+    if (dbMaster.length === 0) {
+        alert("⚠️ CHẨN ĐOÁN: Mảng dbMaster đang trống rỗng (0 dòng). Bạn hãy kiểm tra lại file data.js xem đã dán data Kế hoạch vào chưa nhé!");
+    } else if (mappedCount === 0 && dbMaster.length > 0) {
+        alert("⚠️ CHẨN ĐOÁN: dbMaster có " + dbMaster.length + " dòng, nhưng trượt VLOOKUP 100%. Hãy kiểm tra các KAE đang bị nhãn '⚠️ CHƯA CÓ KAM' trên Dashboard.");
+    }
+}
 
     // 2. Tự động VLOOKUP đắp thông tin vào dbMaster. KAE nào không có KAM quản lý sẽ tự bỏ qua
     enrichedMaster = [];
