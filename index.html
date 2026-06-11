@@ -138,7 +138,7 @@
         </div>
 
         <div class="chart-box">
-            <div class="chart-title" data-i18n="cSegmentTitle">PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG (CUSTOMER SEGMENT BY AREA)</div>
+            <div class="chart-title" data-i18n="cSegmentTitle">PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG</div>
             <div class="chart-subtitle"></div>
             <div class="table-wrap" id="segmentAreaTableContainer"></div>
         </div>
@@ -196,7 +196,7 @@ const dict = {
         allKam: "🏠︎ TẤT CẢ KAM", allKae: "🏠︎ TẤT CẢ KAE/DSR", kpiSales: "TỔNG SELL OUT", kpiSalesSub: "VNĐ (Chưa VAT)", 
         kpiTotal: "TỔNG KH TRÊN TUYẾN", kpiTotalSub: "khách hàng", kpiActive: "Khách Active", kpiActiveSub: "khách hàng", 
         kpiStrike: "Strike Rate", kpiStrikeSub: "Tỷ lệ KH Active / Tổng", cAreaTitle: "HIỆU SUẤT THEO KHU VỰC (AREA)", 
-        cSegmentTitle: "📊 PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG (CUSTOMER SEGMENT BY AREA)",
+        cSegmentTitle: "📊 PHÂN TÍCH HIỆU SUẤT THEO PHÂN KHÚC KHÁCH HÀNG",
         cKamTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAM", cDayTitle: "HIỆU SUẤT DOANH SỐ VÀ KHÁCH HÀNG BY KAE",
         axisCust: "Đơn vị: Mã KH", axisVnd: "Đơn vị: VNĐ", legSales: "Doanh số", legTotal: "Tổng KH Kế Hoạch", legActive: "KH Active",
         tblColArea: "Chỉ số / Khu vực", tblColKam: "Chỉ số / Ngày (KAM)", tblColDay: "Chỉ số / Ngày (KAE)",
@@ -246,10 +246,10 @@ let dbSales = [];
 const t = (key) => dict[lang][key] || key;
 const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
 
-// 🔥 CÁC CỖ MÁY CHUẨN HÓA DỮ LIỆU 🔥
+// 🔥 CHUẨN HÓA DỮ LIỆU 🔥
 const getW = (d) => String(d.week || d.Week || "").toUpperCase().trim();
 
-// Máy giặt tên có map với file bên ngoài
+// Làm sạch tên KAM map với file kamMap.js
 const cleanName = (name, isKamField = false) => {
     let cleanStr = String(name || "").replace(/[✔️❌]/g, '').trim();
     if (isKamField) {
@@ -261,7 +261,7 @@ const cleanName = (name, isKamField = false) => {
     return cleanStr;
 };
 
-// 🔥 MÁY QUÉT TRẠNG THÁI SIÊU TỐC O(N) 🔥
+// 🔥 Quét trạng thái active/inactive của Kae/DSR 🔥
 const buildStatusMap = (subset, key) => {
     let map = {};
     let isKamField = (key === 'kam');
@@ -277,7 +277,7 @@ const buildStatusMap = (subset, key) => {
 };
 
 // =========================================================
-// 3. ĐỘNG CƠ TÍNH TOÁN HIỆU SUẤT (DUAL ENGINE)
+// 3.TÍNH TOÁN HIỆU SUẤT
 // =========================================================
 const parseDay = (dayStr) => {
     const d = String(dayStr).toLowerCase().trim();
@@ -315,7 +315,7 @@ const aggregateDualData = (masterSubset, salesSubset) => {
 };
 
 // =========================================================
-// 4. HÀM TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MATRIX CUSTOMER SEGMENT
+// 4. TÍNH TOÁN VÀ ĐỔ DỮ LIỆU MA TRẬN CUSTOMER SEGMENT
 // =========================================================
 function renderSegmentTable(masterSubset, salesSubset) {
     let cusSegmentMap = {};
@@ -442,7 +442,7 @@ function renderSegmentTable(masterSubset, salesSubset) {
 }
 
 // =========================================================
-// 5. ĐỘNG CƠ ĐIỀU CHỈNH GIAO DIỆN (UI RESIZER & LANGUAGE)
+// 5. ĐIỀU CHỈNH KÉO CỘT VÀ NGÔN NGỮ (UI RESIZER & LANGUAGE)
 // =========================================================
 function initResizer() {
     const resizer = document.getElementById('dragMe');
@@ -467,7 +467,7 @@ function setLang(newLang) {
     render();
 }
 
-// 🔥 TÌM GIẬT LÙI: Bấm KAE tự động bốc ông KAM dán lên bộ lọc 
+// 🔥 TÌM GIẬT LÙI: Bấm KAE tự động bốc KAM dán lên bộ lọc 
 function updateF(type, val) { 
     filters[type] = val; 
     
@@ -520,7 +520,7 @@ function renderFilters() {
     const fMaster = dbMaster.filter(applyF);
     const fSales = dbSales.filter(applyF);
     
-    // 🔥 Sinh ra túi trạng thái SIÊU TỐC
+    // 🔥 lỌC NHANH
     const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
     const localKamStatus = buildStatusMap(fMaster, 'kam');
     
@@ -664,7 +664,7 @@ function render() {
     const workMaster = dbMaster.filter(applyFilters);
     const workSales = dbSales.filter(applyFilters);
 
-    // Tiêu đề phụ (Bọc thép O(N) cực nhanh)
+    // Tiêu đề phụ (O(N))
     const subtitleEl = document.querySelector('.chart-subtitle[data-i18n="cWeekSubtitle"]');
     if (subtitleEl) {
         const globalKamStatus = buildStatusMap([...dbMaster, ...dbSales], 'kam');
