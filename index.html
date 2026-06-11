@@ -251,13 +251,12 @@ const cleanName = (name) => String(name || "").replace(/[✔️❌]/g, '').trim(
 
 // 💡 MÁY QUÉT TRẠNG THÁI: Tìm dòng data mới nhất của nhân viên để bốc lại cái dấu ✔️/❌
 const getDisplayStatus = (cleanStr, subset, key) => {
-    // Quét ngược mảng từ dưới lên trên (để lấy dòng mới nhất)
     for (let i = subset.length - 1; i >= 0; i--) {
         if (cleanName(subset[i][key]) === cleanStr) {
             let raw = String(subset[i][key]).trim();
-            let match = raw.match(/^[✔️❌]/); // Bắt trúng dấu tick hoặc X
-            if (match) return match[0] + ' ' + cleanStr; // Trả về Tên có đính kèm dấu
-            return cleanStr; // Nếu trong Excel ko có dấu thì trả tên trơn
+            let match = raw.match(/^[✔️❌]/); 
+            if (match) return match[0] + ' ' + cleanStr; 
+            return cleanStr; 
         }
     }
     return cleanStr;
@@ -488,23 +487,43 @@ function renderFilters() {
     // Lọc data theo tháng/khu vực trước khi tạo list KAM/KAE
     const fData = dbMaster.filter(d => (filters.month === "all" || d.month === filters.month) && (filters.week === "all" || getW(d) === filters.week.toUpperCase()) && (filters.hq === "all" || d.hq === filters.hq) && (filters.area === "all" || d.area === filters.area));
     
-    // ĐỔ DANH SÁCH KAM TỰ ĐỘNG GẮN DẤU
+    // ĐỔ DANH SÁCH KAM & ÉP NGƯỜI NGHỈ (❌) XUỐNG ĐÁY DANH SÁCH
     const kList = document.getElementById("kamList");
-    const aKams = [...new Set(fData.map(d => cleanName(d.kam)))].filter(Boolean).sort();
+    let aKams = [...new Set(fData.map(d => cleanName(d.kam)))].filter(Boolean);
+    let kamStatusMap = {};
+    aKams.forEach(k => kamStatusMap[k] = getDisplayStatus(k, fData, 'kam'));
+    
+    aKams.sort((a, b) => {
+        let isInactiveA = kamStatusMap[a].startsWith('❌');
+        let isInactiveB = kamStatusMap[b].startsWith('❌');
+        if (isInactiveA && !isInactiveB) return 1;
+        if (!isInactiveA && isInactiveB) return -1;
+        return a.localeCompare(b);
+    });
+
     kList.innerHTML = `<div class="list-item ${filters.kam === 'all' ? 'selected' : ''}" onclick="updateF('kam', 'all')">${t('allKam')}</div>`;
     aKams.forEach(k => { 
-        let displayK = getDisplayStatus(k, fData, 'kam');
-        kList.innerHTML += `<div class="list-item ${filters.kam === k ? 'selected' : ''}" onclick="updateF('kam', '${k}')">${displayK}</div>`; 
+        kList.innerHTML += `<div class="list-item ${filters.kam === k ? 'selected' : ''}" onclick="updateF('kam', '${k}')">${kamStatusMap[k]}</div>`; 
     });
     
-    // ĐỔ DANH SÁCH KAE TỰ ĐỘNG GẮN DẤU
+    // ĐỔ DANH SÁCH KAE & ÉP NGƯỜI NGHỈ (❌) XUỐNG ĐÁY DANH SÁCH
     const kaeList = document.getElementById("kaeList");
     const dKae = filters.kam === "all" ? fData : fData.filter(d => cleanName(d.kam) === filters.kam);
-    const aKaes = [...new Set(dKae.map(d => cleanName(d.kae)))].filter(Boolean).sort();
+    let aKaes = [...new Set(dKae.map(d => cleanName(d.kae)))].filter(Boolean);
+    let kaeStatusMap = {};
+    aKaes.forEach(k => kaeStatusMap[k] = getDisplayStatus(k, dKae, 'kae'));
+
+    aKaes.sort((a, b) => {
+        let isInactiveA = kaeStatusMap[a].startsWith('❌');
+        let isInactiveB = kaeStatusMap[b].startsWith('❌');
+        if (isInactiveA && !isInactiveB) return 1;
+        if (!isInactiveA && isInactiveB) return -1;
+        return a.localeCompare(b);
+    });
+
     kaeList.innerHTML = `<div class="list-item ${filters.kae === 'all' ? 'selected' : ''}" onclick="updateF('kae', 'all')">${t('allKae')}</div>`;
     aKaes.forEach(n => { 
-        let displayN = getDisplayStatus(n, dKae, 'kae');
-        kaeList.innerHTML += `<div class="list-item ${filters.kae === n ? 'selected' : ''}" onclick="updateF('kae', '${n}')">${displayN}</div>`; 
+        kaeList.innerHTML += `<div class="list-item ${filters.kae === n ? 'selected' : ''}" onclick="updateF('kae', '${n}')">${kaeStatusMap[n]}</div>`; 
     });
 }
 
